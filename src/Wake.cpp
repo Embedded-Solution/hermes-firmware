@@ -132,7 +132,15 @@ void wake()
                 }
                 else if (i == GPIO_VCC_SENSE) // wifi config
                 {
-                    startPortal();
+                    while (1)
+                    {
+                        tsys01 temperatureSensor = tsys01();
+                        ms5837 depthSensor = ms5837();
+                        Record tempRecord = Record{temperatureSensor.getTemp(), depthSensor.getDepth()};
+                        delay(1000);
+                        log_d("Temperature = %u", tempRecord.Temp);
+                        log_d("Depth = %u", tempRecord.Depth);
+                    }
                 }
                 else if (i == GPIO_CONFIG) // button config
                 {
