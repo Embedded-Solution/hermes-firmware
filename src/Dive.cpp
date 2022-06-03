@@ -35,7 +35,6 @@ void Dive::init()
 String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
 {
     init();
-    Serial.println(time);
     ID = createID(time);
     saveId(ID);
 
@@ -50,7 +49,6 @@ String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
 
 String Dive::End(long time, lat lat, lng lng)
 {
-    Serial.print("Time = "), Serial.println(time);
     if (writeMetadataEnd(time, lat, lng) == -1)
     {
         return "";
@@ -68,7 +66,7 @@ int Dive::NewRecord(Record r)
     {
         if (writeSilo() == -1)
         {
-            Serial.println("error saving silo");
+            log_e("error saving silo");
             return -1;
         }
         // delete[] diveRecords;
@@ -84,7 +82,7 @@ int Dive::NewRecordStatic(Record r)
 
     if (writeStaticRecord() == -1)
     {
-        Serial.println("error saving silo");
+        log_e("error saving silo");
         return -1;
     }
 
@@ -122,8 +120,8 @@ int Dive::writeStaticRecord()
 
     String path = "/" + ID + "/silo" + String(staticOrder) + ".json";
 
-    Serial.print("Current Records = "), Serial.println(staticCurrentRecords);
-    Serial.print("Order = "), Serial.println(staticOrder);
+    log_v("Current Records = %d", staticCurrentRecords);
+    log_v("Order = %d", staticOrder);
 
     staticCurrentRecords++;
     // Change silo number if enough records
@@ -152,7 +150,7 @@ int Dive::writeStaticRecord()
         String records = storage->readFile(path);
         if (records == "")
         {
-            Serial.println("Could not read previous ID records file");
+            log_e("Could not read previous ID records file");
             return -1;
         }
         else
@@ -188,7 +186,6 @@ int Dive::writeMetadataStart(long time, double lat, double lng, int freq, bool m
 
     String buffer;
     serializeJson(mdata, buffer);
-    log_d("Start metadatajson file");
     return storage->writeFile(path, buffer);
 }
 
@@ -201,7 +198,7 @@ int Dive::writeMetadataEnd(long time, double lat, double lng)
     data = storage->readFile(path);
     if (data == "")
     {
-        Serial.println("Failed to read metadata to save dive!");
+        log_e("Failed to read metadata to save dive!");
         return -1;
     }
 
@@ -229,7 +226,6 @@ int Dive::createIndex()
 
         String buffer;
         serializeJson(index, buffer);
-        Serial.print("BUFFER NEW INDEX = "), Serial.println(buffer);
 
         return storage->writeFile(indexPath, buffer);
     }
@@ -238,7 +234,7 @@ int Dive::createIndex()
         String index = storage->readFile(indexPath);
         if (index == "")
         {
-            Serial.println("Could not read index file");
+            log_e("Could not read index file");
             return -1;
         }
         else
@@ -263,7 +259,7 @@ int Dive::updateIndex(String updatedID)
     String index = storage->readFile(indexPath);
     if (index == "")
     {
-        Serial.println("Could not read index file");
+        log_e("Could not read index file");
         return -1;
     }
     else
@@ -287,7 +283,7 @@ int Dive::deleteIndex(String deletedID)
     String index = storage->readFile(indexPath);
     if (index == "")
     {
-        Serial.println("Could not read index file");
+        log_e("Could not read index file");
         return -1;
     }
     else
@@ -311,7 +307,6 @@ void Dive::saveId(String ID)
 
 String Dive::getID()
 {
-    Serial.print("Saved ID : "), Serial.println(savedID);
     return String(savedID);
 }
 

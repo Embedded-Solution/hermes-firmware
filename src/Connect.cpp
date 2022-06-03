@@ -12,7 +12,7 @@ int uploadDives(SecureDigital sd)
     data = sd.readFile(indexPath);
     if (data == "")
     {
-        Serial.println("Could not read index file to upload dives");
+        log_e("Could not read index file to upload dives");
         return -1;
     }
     deserializeJson(indexJson, data);
@@ -20,37 +20,35 @@ int uploadDives(SecureDigital sd)
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it)
     {
         String ID = it->key().c_str();
-        Serial.println(ID);
 
         JsonObject dive = indexJson[ID].as<JsonObject>();
         const int uploaded = dive["uploaded"];
-        Serial.println(uploaded);
         if (uploaded != 0)
         {
             continue;
         }
 
         String metadata = sd.readFile("/" + ID + "/metadata.json");
-        log_d("RECORDS = %s ", metadata);
+        log_v("RECORDS = %s ", metadata.c_str());
         if (post(metadata, true) != 200) // post metadata
             error = true;
         else
-            log_d("Metadata posted");
+            log_i("Metadata posted");
 
         int i = 0;
         String path = "/" + ID + "/silo0.json";
 
- String records = "";
-         while (sd.findFile(path) == 0)
-         {
-             String records = sd.readFile(path);
-             if (post(records) != 200) // post silos
-                 error = true;
-             else
-                 log_d("Silo %d posted", i);
-             i++;
-             path = "/" + ID + "/silo" + i + ".json";
-         }
+        String records = "";
+        while (sd.findFile(path) == 0)
+        {
+            String records = sd.readFile(path);
+            if (post(records) != 200) // post silos
+                error = true;
+            else
+                log_i("Silo %d posted", i);
+            i++;
+            path = "/" + ID + "/silo" + i + ".json";
+        }
 
         if (!error)
             dive["uploaded"] = 1;
@@ -65,7 +63,6 @@ int uploadDives(SecureDigital sd)
 int post(String data, bool metadata)
 {
 
-    Serial.println(data);
     if ((WiFi.status() == WL_CONNECTED))
     {
 
@@ -76,12 +73,12 @@ int post(String data, bool metadata)
 
         if (!http.begin(client, metadata ? metadataURL : recordURL))
         {
-            log_d("BEGIN FAILED...");
+            log_e("BEGIN FAILED...");
         }
 
         http.addHeader("Content-Type", "application/json");
         int code = http.POST(data.c_str());
-        log_d("HTTP RETURN = %d", code);
+        log_i("HTTP RETURN = %d", code);
 
         // Disconnect
         http.end();
@@ -90,7 +87,7 @@ int post(String data, bool metadata)
     }
     else
     {
-        Serial.println("****** NO WIFI!!");
+        log_e("****** NO WIFI!!");
         return -1;
     }
     return -2;
@@ -101,7 +98,7 @@ void startPortal(SecureDigital sd)
     WebServer Server;
     AutoConnect Portal(Server);
 
-    Serial.printf("starting config portal...\n");
+    log_v("starting config portal...");
     AutoConnectConfig acConfig("Remora Config", "cousteau");
     // acConfig.hostName = String("remora");
     // acConfig.homeUri = "https://www.google.fr";
@@ -120,24 +117,24 @@ void startPortal(SecureDigital sd)
     {
         Portal.handleClient();
     }
-    Serial.println(WiFi.localIP());
+    log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
 
     pinMode(GPIO_LED1, OUTPUT);
     digitalWrite(GPIO_LED2, HIGH);
 
-    log_d("Wifi connected, start upload dives");
+    log_v("Wifi connected, start upload dives");
 
     if (uploadDives(sd) != SUCCESS)
         error = true;
 
-    log_d("Upload finished, start OTA");
+    log_v("Upload finished, start OTA");
     if (ota() != SUCCESS)
         error = true;
 
     pinMode(GPIO_LED1, OUTPUT);
     digitalWrite(GPIO_LED1, error);
     digitalWrite(GPIO_LED2, LOW);
-    log_d("OTA finished, waiting for usb disconnection");
+    log_v("OTA finished, waiting for usb disconnection");
 
     pinMode(GPIO_VCC_SENSE, INPUT);
     while (WiFi.status() == WL_CONNECTED && digitalRead(GPIO_VCC_SENSE))
@@ -145,7 +142,7 @@ void startPortal(SecureDigital sd)
         Portal.handleClient();
     }
 
-    log_d("USB disconnected, go back to sleep");
+    log_v("USB disconnected, go back to sleep");
     sleep(false);
 }
 
@@ -155,7 +152,7 @@ int ota()
     String firmwareName;
     HTTPClient http;
     String firmwareURL;
-    Serial.println(WiFi.localIP());
+    log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
 
     if (http.begin(cloudFunction))
     {
@@ -172,13 +169,13 @@ int ota()
 
             version.remove(0, 10);
 
-            Serial.print("Firmware = "), Serial.println(version.toFloat());
+            log_i("Firmware = %1.2f", version.toFloat());
 
             if (version.toFloat() <= FIRMWARE_VERSION)
             {
                 http.end();
-                Serial.printf("Will not update as I am version:%1.2f and you are offering version:%1.2f\n", version.toFloat(), FIRMWARE_VERSION);
-                return OLD_FIRMWARE_ERROR;
+                log_i("Will not update as I am version:%1.2f and you are offering version:%1.2f\n", version.toFloat(), FIRMWARE_VERSION);
+                return SUCCESS;
             }
             else
             {
@@ -192,59 +189,59 @@ int ota()
                         gotten = http.getSize();
                         if (!Update.begin(gotten))
                         {
-                            Serial.printf("Firmware file too big at %d\n", gotten);
+                            log_e("Firmware file too big at %d\n", gotten);
                             http.end();
                             return FIRMWARE_SIZE_ERROR;
                         }
-                        Serial.println("atempting to update...");
+                        log_v("atempting to update...");
                         written = Update.writeStream(http.getStream());
                     }
                     http.end();
                 }
                 else
                 {
-                    Serial.println("could not get update file");
+                    log_e("could not get update file");
                     http.end();
                     return GET_FIRMWARE_ERROR;
                 }
 
                 if (written == gotten)
                 {
-                    Serial.println("Written : " + String(written) + " successfully");
+                    log_i("Written : %d successfully", written);
                 }
                 else
                 {
-                    Serial.println("Written only : " + String(written) + "/" + String(gotten) + ". Retry?");
+                    log_e("Written only : %d/%d . Retry?", written, gotten);
                 }
 
                 if (Update.end())
                 {
-                    Serial.println("OTA done!");
+                    log_v("OTA done!");
                     if (Update.isFinished())
                     {
-                        Serial.println("Update successfully completed. Rebooting.");
+                        log_v("Update successfully completed. Rebooting.");
                     }
                     else
                     {
-                        Serial.println("Update not finished? Something went wrong!");
+                        log_e("Update not finished? Something went wrong!");
                     }
                 }
                 else
                 {
-                    Serial.println("Error Occurred. Error #: " + String(Update.getError()));
+                    log_e("Error Occurred. Error #: %d", Update.getError());
                 }
             }
         }
         else
         {
-            Serial.println("could not contact cloud function");
+            log_e("could not contact cloud function");
             http.end();
             return CONNECTION_ERROR;
         }
     }
     else
     {
-        Serial.println("could not begin http client");
+        log_e("could not begin http client");
         return HTTP_BEGIN_ERROR;
     }
     http.end();

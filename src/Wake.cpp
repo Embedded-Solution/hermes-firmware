@@ -12,7 +12,7 @@ RTC_DATA_ATTR long staticTime;
 void wake()
 {
 
-    Serial.printf("firmware version:%1.2f\n", FIRMWARE_VERSION);
+    log_i("firmware version:%1.2f\n", FIRMWARE_VERSION);
     pinMode(GPIO_LED2, OUTPUT);
     pinMode(GPIO_LED3, OUTPUT);
     pinMode(GPIO_LED4, OUTPUT);
@@ -22,7 +22,6 @@ void wake()
     digitalWrite(GPIO_LED4, LOW);
 
     uint64_t wakeup_reason = esp_sleep_get_wakeup_cause();
-    Serial.print("Wake Up reason = "), Serial.println(wakeup_reason);
 
     if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
     {
@@ -55,7 +54,6 @@ void wake()
         {
             if (wakeup_reason & mask)
             {
-                Serial.printf("Wakeup because %d\n", i);
                 if (i == GPIO_WATER) // Start dive
                 {
                     if (staticMode)
@@ -67,7 +65,6 @@ void wake()
                     {
                         dynamicDive();
                     }
-                    Serial.println("done");
                 }
                 else if (i == GPIO_VCC_SENSE) // wifi config
                 {
@@ -79,7 +76,7 @@ void wake()
 
                     if (staticMode)
                     {
-                        Serial.println("Static Diving");
+                        log_v("Static Diving");
 
                         digitalWrite(GPIO_LED4, HIGH);
                         delay(3000);
@@ -87,7 +84,7 @@ void wake()
                     }
                     else
                     {
-                        Serial.println("Dynamic diving");
+                        log_v("Dynamic diving");
 
                         for (int i = 0; i < 10; i++)
                         {
@@ -121,7 +118,7 @@ void sleep(bool timer)
         esp_sleep_enable_ext1_wakeup(wakeMask, ESP_EXT1_WAKEUP_ANY_HIGH);
     }
 
-    Serial.println("Going to sleep now");
+    log_i("Going to sleep now");
     esp_deep_sleep_start();
 }
 
@@ -143,7 +140,6 @@ void dynamicDive()
 
     if (d.Start(now(), gps.getLat(), gps.getLng(), TIME_DYNAMIC_MODE, staticMode) == "")
     {
-        Serial.println("error starting the dive");
         pinMode(GPIO_LED1, OUTPUT);
         for (int i = 0; i < 3; i++)
         {
@@ -164,7 +160,6 @@ void dynamicDive()
         while (count < maxCounter)
         {
             pinMode(GPIO_WATER, INPUT);
-            log_d("Valeur capteur eau = %d", analogRead(GPIO_WATER));
             if (analogRead(GPIO_WATER) >= WATER_TRIGGER)
                 count = 0; // reset No water counter
             else
@@ -201,14 +196,14 @@ void dynamicDive()
 
         if (ID == "")
         {
-            Serial.println("error ending the dive");
+            log_e("error ending the dive");
         }
         else
         {
             if (!validDive)
             {
                 d.deleteID(ID);
-                Serial.println("Dive not valid, record deleted");
+                log_v("Dive not valid, record deleted");
             }
         }
     }
@@ -231,7 +226,6 @@ void startStaticDive()
 
     if (staticDive.Start(now(), gps.getLat(), gps.getLng(), TIME_TO_SLEEP_STATIC, staticMode) == "")
     {
-        Serial.println("error starting the static dive");
         pinMode(GPIO_LED1, OUTPUT);
         for (int i = 0; i < 3; i++)
         {
@@ -304,6 +298,6 @@ void endStaticDive()
 
     if (ID == "")
     {
-        Serial.println("error ending the dive");
+        log_e("error ending the dive");
     }
 }
