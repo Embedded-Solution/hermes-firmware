@@ -19,6 +19,7 @@ int uploadDives(SecureDigital sd)
     JsonObject root = indexJson.as<JsonObject>();
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it)
     {
+        error = false;
         String ID = it->key().c_str();
 
         JsonObject dive = indexJson[ID].as<JsonObject>();
@@ -99,6 +100,7 @@ void startPortal(SecureDigital sd)
     AutoConnect Portal(Server);
 
     log_v("starting config portal...");
+
     AutoConnectConfig acConfig("Remora Config", "cousteau");
     // acConfig.hostName = String("remora");
     // acConfig.homeUri = "https://www.google.fr";
