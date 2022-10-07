@@ -1,6 +1,6 @@
 #include <Wake.hpp>
 
-#define MODE_DEBUG false
+//#define MODE_DEBUG
 
 using namespace std;
 SecureDigital sd;
@@ -13,7 +13,6 @@ RTC_DATA_ATTR long staticTime;
 
 void wake()
 {
-
     log_i("firmware version:%1.2f\n", FIRMWARE_VERSION);
     pinMode(GPIO_LED2, OUTPUT);
     pinMode(GPIO_LED3, OUTPUT);
