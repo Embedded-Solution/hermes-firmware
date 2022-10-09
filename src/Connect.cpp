@@ -129,9 +129,15 @@ void startPortal(SecureDigital sd)
     Portal.begin();
     bool error = false;
 
+    pinMode(GPIO_VCC_SENSE, INPUT);
+
     while (WiFi.status() == WL_DISCONNECTED)
     {
         Portal.handleClient();
+        if (!digitalRead(GPIO_VCC_SENSE)) // if usb cable disconnect go back to sleep
+        {
+            sleep(false);
+        }
     }
     log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
 
@@ -152,7 +158,6 @@ void startPortal(SecureDigital sd)
     digitalWrite(GPIO_LED2, LOW);
     log_v("OTA finished, waiting for usb disconnection");
 
-    pinMode(GPIO_VCC_SENSE, INPUT);
     while (WiFi.status() == WL_CONNECTED && digitalRead(GPIO_VCC_SENSE))
     {
         Portal.handleClient();

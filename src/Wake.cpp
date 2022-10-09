@@ -23,32 +23,17 @@ void wake()
     digitalWrite(GPIO_LED3, LOW);
     digitalWrite(GPIO_LED4, LOW);
 
+    pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
+    digitalWrite(GPIO_PROBE, LOW);
+
     uint64_t wakeup_reason = esp_sleep_get_wakeup_cause();
 
     if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
     {
-        pinMode(GPIO_PROBE, INPUT);
-        if (analogRead(GPIO_WATER) >= WATER_TRIGGER)
-            staticCount = 0; // reset No water counter
-        else
-            staticCount++;           // if no water counter++
-        pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
-        digitalWrite(GPIO_PROBE, LOW);
-
-        if (staticCount < MAX_STATIC_COUNTER)
-        {
-            recordStaticDive(); // new static record
-            sleep(true);        // sleep with timer
-        }
-        else
-        {
-            endStaticDive();
-            sleep(false); // sleep without timer waiting for other dive or config button
-        }
+        staticDiveWakeUp();
     }
     else
     {
-
         wakeup_reason = esp_sleep_get_ext1_wakeup_status();
 
         uint64_t mask = 1;
@@ -75,28 +60,7 @@ void wake()
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
                 {
-                    staticMode = !staticMode;
-
-                    if (staticMode)
-                    {
-                        log_v("Static Diving");
-
-                        digitalWrite(GPIO_LED4, HIGH);
-                        delay(3000);
-                        digitalWrite(GPIO_LED4, LOW);
-                    }
-                    else
-                    {
-                        log_v("Dynamic diving");
-
-                        for (int i = 0; i < 10; i++)
-                        {
-                            digitalWrite(GPIO_LED4, HIGH);
-                            delay(150);
-                            digitalWrite(GPIO_LED4, LOW);
-                            delay(150);
-                        }
-                    }
+                    selectMode();
                 }
             }
 
@@ -273,6 +237,28 @@ void startStaticDive()
     }
 }
 
+void staticDiveWakeUp()
+{
+    pinMode(GPIO_PROBE, INPUT);
+    if (analogRead(GPIO_WATER) >= WATER_TRIGGER)
+        staticCount = 0; // reset No water counter
+    else
+        staticCount++;           // if no water counter++
+    pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
+    digitalWrite(GPIO_PROBE, LOW);
+
+    if (staticCount < MAX_STATIC_COUNTER)
+    {
+        recordStaticDive(); // new static record
+        sleep(true);        // sleep with timer
+    }
+    else
+    {
+        endStaticDive();
+        sleep(false); // sleep without timer waiting for other dive or config button
+    }
+}
+
 void recordStaticDive()
 {
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
@@ -316,5 +302,31 @@ void endStaticDive()
     if (ID == "")
     {
         log_e("error ending the dive");
+    }
+}
+
+void selectMode()
+{
+    staticMode = !staticMode;
+
+    if (staticMode)
+    {
+        log_v("Static Diving");
+
+        digitalWrite(GPIO_LED4, HIGH);
+        delay(3000);
+        digitalWrite(GPIO_LED4, LOW);
+    }
+    else
+    {
+        log_v("Dynamic diving");
+
+        for (int i = 0; i < 10; i++)
+        {
+            digitalWrite(GPIO_LED4, HIGH);
+            delay(150);
+            digitalWrite(GPIO_LED4, LOW);
+            delay(150);
+        }
     }
 }
