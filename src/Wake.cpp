@@ -35,7 +35,7 @@ void wake()
         pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
         digitalWrite(GPIO_PROBE, LOW);
 
-        if (staticCount < maxStaticCounter)
+        if (staticCount < MAX_STATIC_COUNTER)
         {
             recordStaticDive(); // new static record
             sleep(true);        // sleep with timer
@@ -136,6 +136,9 @@ void sleep(bool timer)
 
 void dynamicDive()
 {
+    pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
+    digitalWrite(GPIO_PROBE, LOW);
+
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
     digitalWrite(GPIO_SENSOR_POWER, LOW);
     delay(10);
@@ -169,27 +172,28 @@ void dynamicDive()
         double depth, temp;
         long time = 0;
 
-        while (count < maxCounter)
+        while (count < MAX_DYNAMIC_COUNTER)
         {
-            pinMode(GPIO_PROBE, INPUT);
-            if (analogRead(GPIO_WATER) >= WATER_TRIGGER)
-                count = 0; // reset No water counter
-            else
-                count++; // if no water counter++
-
-            pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
-            digitalWrite(GPIO_PROBE, LOW);
-
             temp = temperatureSensor.getTemp();
             depth = depthSensor.getDepth();
             time += (TIME_DYNAMIC_MODE / 1000); // get time in seconds since wake up
 
             if (validDive == false) // if dive still not valid, check if depthMin reached
             {
-                if (depth > minDepth)
+                if (depth > MIN_DEPTH_VALID_DIVE)
                     validDive = true; // if minDepth reached, dive is valid
             }
 
+            if (depth < MAX_DEPTH_CHECK_WATER)
+            {
+                pinMode(GPIO_PROBE, INPUT); // enable probe pin to allow water detection
+                if (analogRead(GPIO_WATER) >= WATER_TRIGGER)
+                    count = 0; // reset No water counter
+                else
+                    count++;                 // if no water counter++
+                pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
+                digitalWrite(GPIO_PROBE, LOW);
+            }
             Record tempRecord = Record{temp, depth, time};
             d.NewRecord(tempRecord);
 

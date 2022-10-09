@@ -13,7 +13,7 @@ int uploadDives(SecureDigital sd)
     if (data == "")
     {
         log_e("Could not read index file to upload dives");
-        return -1;
+        return -2;
     }
     deserializeJson(indexJson, data);
     JsonObject root = indexJson.as<JsonObject>();
@@ -80,7 +80,6 @@ int post(String data, bool metadata)
 
         HTTPClient http;
         WiFiClientSecure client;
-        // client.setCACert(test_root_ca);
         client.setInsecure();
 
         if (!http.begin(client, metadata ? metadataURL : recordURL))
@@ -165,13 +164,14 @@ void startPortal(SecureDigital sd)
 
 int ota()
 {
-    String cloudFunction = "https://project-hermes.azurewebsites.net/api/Firmware";
     String firmwareName;
     HTTPClient http;
+    WiFiClientSecure client;
+    client.setInsecure();
     String firmwareURL;
     log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
 
-    if (http.begin(cloudFunction))
+    if (http.begin(firmwareURL))
     {
         if (http.GET() == 200)
         {
@@ -199,7 +199,7 @@ int ota()
                 // Start update
                 size_t written = 0;
                 size_t gotten = 1;
-                if (http.begin(firmwareURL))
+                if (http.begin(client, firmwareURL))
                 {
                     if (http.GET() == 200)
                     {
