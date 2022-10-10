@@ -72,7 +72,7 @@ private:
 
     int writeMetadataEnd(long time, double lat, double lng);
     int writeMetadataStart(long time, double lat, double lng, int freq, bool mode);
-    int writeSilo();
+    int writeSilo(bool last=false, int currentRecord=0);
     int writeStaticRecord();
 };
 

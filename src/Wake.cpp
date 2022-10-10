@@ -30,6 +30,7 @@ void wake()
 
     if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
     {
+        log_d("Wake up timer static");
         staticDiveWakeUp();
     }
     else
@@ -44,6 +45,7 @@ void wake()
             {
                 if (i == GPIO_WATER) // Start dive
                 {
+                    log_d("Wake up gpio water");
                     if (staticMode)
                     { // if Water wake up and staticMode
                         startStaticDive();
@@ -56,10 +58,12 @@ void wake()
                 }
                 else if (i == GPIO_VCC_SENSE) // wifi config
                 {
+                    log_d("Wake up gpio vcc sense");
                     startPortal(sd);
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
                 {
+                    log_d("Wake up gpio config");
                     selectMode();
                 }
             }
@@ -86,6 +90,7 @@ void sleep(bool timer)
     }
     else // if other mode, wake up with water, config, or charging
     {
+        pinMode(GPIO_PROBE, INPUT); // Set GPIO PROBE back to input to allow water detection
 #ifndef MODE_DEBUG
         uint64_t wakeMask = 1ULL << GPIO_WATER | 1ULL << GPIO_CONFIG | 1ULL << GPIO_VCC_SENSE;
 #else
@@ -151,7 +156,9 @@ void dynamicDive()
             if (depth < MAX_DEPTH_CHECK_WATER)
             {
                 pinMode(GPIO_PROBE, INPUT); // enable probe pin to allow water detection
-                if (analogRead(GPIO_WATER) >= WATER_TRIGGER)
+                int value = analogRead(GPIO_WATER);
+                log_d("Value = %d", value);
+                if (value >= WATER_TRIGGER)
                     count = 0; // reset No water counter
                 else
                     count++;                 // if no water counter++
@@ -239,69 +246,57 @@ void startStaticDive()
 
 void staticDiveWakeUp()
 {
-    pinMode(GPIO_PROBE, INPUT);
-    if (analogRead(GPIO_WATER) >= WATER_TRIGGER)
-        staticCount = 0; // reset No water counter
-    else
-        staticCount++;           // if no water counter++
     pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
     digitalWrite(GPIO_PROBE, LOW);
+    pinMode(GPIO_SENSOR_POWER, OUTPUT);
+    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    delay(10);
+    Wire.begin(I2C_SDA, I2C_SCL);
+    delay(10);
+
+    tsys01 temperatureSensor = tsys01();
+    ms5837 depthSensor = ms5837();
+    double depth, temp;
+
+    temp = temperatureSensor.getTemp();
+    depth = depthSensor.getDepth();
+
+    staticTime += TIME_TO_SLEEP_STATIC;
+
+    if (depth < MAX_DEPTH_CHECK_WATER)
+    {
+        pinMode(GPIO_PROBE, INPUT); // enable probe pin to allow water detection
+        int value;
+
+        value = analogRead(GPIO_WATER);
+        log_d("Value = %d", value);
+
+        if (value >= WATER_TRIGGER)
+            staticCount = 0; // reset No water counter
+        else
+            staticCount++;           // if no water counter++
+        pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
+        digitalWrite(GPIO_PROBE, LOW);
+    }
+
+    Record tempRecord = Record{temp, depth, staticTime};
+    staticDive.NewRecordStatic(tempRecord);
 
     if (staticCount < MAX_STATIC_COUNTER)
     {
-        recordStaticDive(); // new static record
-        sleep(true);        // sleep with timer
+        sleep(true); // sleep with timer
     }
     else
     {
-        endStaticDive();
+        GNSS gps = GNSS();
+
+        String ID = staticDive.End(now(), gps.getLat(), gps.getLng());
+
+        if (ID == "")
+        {
+            log_e("error ending the dive");
+        }
         sleep(false); // sleep without timer waiting for other dive or config button
-    }
-}
-
-void recordStaticDive()
-{
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
-    delay(10);
-    Wire.begin(I2C_SDA, I2C_SCL);
-    delay(10);
-
-    tsys01 temperatureSensor = tsys01();
-    ms5837 depthSensor = ms5837();
-    double depth, temp;
-
-    temp = temperatureSensor.getTemp();
-    depth = depthSensor.getDepth();
-    staticTime += TIME_TO_SLEEP_STATIC;
-
-    Record tempRecord = Record{temp, depth, staticTime};
-    staticDive.NewRecordStatic(tempRecord);
-}
-
-void endStaticDive()
-{
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
-    delay(10);
-    Wire.begin(I2C_SDA, I2C_SCL);
-    delay(10);
-    GNSS gps = GNSS();
-    tsys01 temperatureSensor = tsys01();
-    ms5837 depthSensor = ms5837();
-    double depth, temp;
-
-    temp = temperatureSensor.getTemp();
-    depth = depthSensor.getDepth();
-    staticTime += TIME_TO_SLEEP_STATIC;
-
-    Record tempRecord = Record{temp, depth, staticTime};
-    staticDive.NewRecordStatic(tempRecord);
-    String ID = staticDive.End(now(), gps.getLat(), gps.getLng());
-
-    if (ID == "")
-    {
-        log_e("error ending the dive");
     }
 }
 

@@ -19,8 +19,6 @@ void wake();
 void dynamicDive();
 void startStaticDive();
 void staticDiveWakeUp();
-void recordStaticDive();
-void endStaticDive();
 void sleep(bool timer = false);
 void selectMode();
 

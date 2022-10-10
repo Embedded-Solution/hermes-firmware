@@ -49,6 +49,8 @@ String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
 
 String Dive::End(long time, lat lat, lng lng)
 {
+    writeSilo(true, currentRecords);
+
     if (writeMetadataEnd(time, lat, lng) == -1)
     {
         return "";
@@ -69,7 +71,6 @@ int Dive::NewRecord(Record r)
             log_e("error saving silo");
             return -1;
         }
-        // delete[] diveRecords;
         diveRecords = new Record[siloRecordSize];
         currentRecords = 0;
     }
@@ -89,9 +90,9 @@ int Dive::NewRecordStatic(Record r)
     return 0;
 }
 
-int Dive::writeSilo()
+int Dive::writeSilo(bool last, int currentRecord)
 {
-
+    log_d("CurrentRecord = %d", currentRecord);
     String path = "/" + ID + "/silo" + String(order) + ".json";
 
     DynamicJsonDocument jsonSilo(siloByteSize);
@@ -100,7 +101,8 @@ int Dive::writeSilo()
     order++;
 
     JsonArray records = jsonSilo.createNestedArray("records");
-    for (int i = 0; i < siloRecordSize; i++)
+
+    for (int i = 0; i < (last==true ? currentRecord : siloRecordSize); i++)
     {
         JsonArray record = records.createNestedArray();
         record.add(diveRecords[i].Temp);
