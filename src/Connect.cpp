@@ -129,17 +129,14 @@ void startPortal(SecureDigital sd)
     Portal.begin();
     bool error = false;
 
-    pinMode(GPIO_VCC_SENSE, INPUT);
-
     while (WiFi.status() == WL_DISCONNECTED)
     {
         Portal.handleClient();
-        if (!digitalRead(GPIO_VCC_SENSE)) // if usb cable disconnect go back to sleep
-        {
-            sleep(false);
-        }
     }
     log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
+    
+    // detach interrupt to keep remora alive during upload and ota process even if usb is disconnected
+    detachInterrupt(GPIO_VCC_SENSE);
 
     pinMode(GPIO_LED1, OUTPUT);
     digitalWrite(GPIO_LED2, HIGH);

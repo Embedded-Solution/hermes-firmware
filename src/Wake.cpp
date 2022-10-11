@@ -1,6 +1,6 @@
 #include <Wake.hpp>
 
-#define MODE_DEBUG
+//#define MODE_DEBUG
 
 using namespace std;
 SecureDigital sd;
@@ -10,6 +10,12 @@ RTC_DATA_ATTR Dive staticDive(&sd);
 RTC_DATA_ATTR bool staticMode = false;
 RTC_DATA_ATTR int staticCount;
 RTC_DATA_ATTR long staticTime;
+
+/// @brief Interrupt routine to shutdown remora if wifi is disconnected
+/// @return 
+void IRAM_ATTR ISR() {
+sleep(false);
+}
 
 void wake()
 {
@@ -60,6 +66,10 @@ void wake()
                 else if (i == GPIO_VCC_SENSE) // wifi config
                 {
                     log_d("Wake up gpio vcc sense");
+
+                    //While wifi not set, shutdown if usb is disconnected
+                    attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
+
                     startPortal(sd);
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
@@ -80,7 +90,7 @@ void sleep(bool timer)
 
     if (timer) // if static diving, wake up with timer or config button
     {
-        
+
         pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
         digitalWrite(GPIO_PROBE, LOW);
         gpio_hold_en(GPIO_NUM_33);
