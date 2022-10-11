@@ -1,6 +1,6 @@
 #include <Wake.hpp>
 
-//#define MODE_DEBUG
+#define MODE_DEBUG
 
 using namespace std;
 SecureDigital sd;
@@ -31,6 +31,7 @@ void wake()
     if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
     {
         log_d("Wake up timer static");
+        gpio_hold_dis(GPIO_NUM_33);
         staticDiveWakeUp();
     }
     else
@@ -79,6 +80,7 @@ void sleep(bool timer)
 
     if (timer) // if static diving, wake up with timer or config button
     {
+        
         pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
         digitalWrite(GPIO_PROBE, LOW);
         gpio_hold_en(GPIO_NUM_33);
@@ -180,7 +182,7 @@ void dynamicDive()
             led_on = !led_on;
         }
 
-        String ID = d.End(now(), gps.getLat(), gps.getLng());
+        String ID = d.End(now(), gps.getLat(), gps.getLng(), staticMode);
 
         if (ID == "")
         {
@@ -290,7 +292,7 @@ void staticDiveWakeUp()
     {
         GNSS gps = GNSS();
 
-        String ID = staticDive.End(now(), gps.getLat(), gps.getLng());
+        String ID = staticDive.End(now(), gps.getLat(), gps.getLng(), staticMode);
 
         if (ID == "")
         {

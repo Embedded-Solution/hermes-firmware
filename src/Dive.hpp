@@ -40,7 +40,7 @@ public:
     Dive(Storage *s);
 
     String Start(long time, lat lat, lng lng, int freq, bool mode);
-    String End(long time, lat lat, lng lng);
+    String End(long time, lat lat, lng lng, bool mode);
 
     int NewRecord(Record r);
     int NewRecordStatic(Record r);
