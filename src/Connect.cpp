@@ -135,6 +135,7 @@ void startPortal(SecureDigital sd)
     }
     log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
     
+
     // detach interrupt to keep remora alive during upload and ota process even if usb is disconnected
     detachInterrupt(GPIO_VCC_SENSE);
 
@@ -170,7 +171,7 @@ int ota()
     HTTPClient http;
     WiFiClientSecure client;
     client.setInsecure();
-    String firmwareURL;
+    String updateURL;
     log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
 
     if (http.begin(firmwareURL))
@@ -184,13 +185,14 @@ int ota()
             const char *name = firmwareJson["name"];
             String version = name;
             const char *url = firmwareJson["url"];
-            firmwareURL = url;
+            updateURL = url;
+            log_d("Name = %s", version.c_str());
 
             version.remove(0, 10);
 
             log_i("Firmware = %1.2f", version.toFloat());
 
-            if (version.toFloat() <= FIRMWARE_VERSION)
+            if (version.toFloat() <= FIRMWARE_VERSION + 0.00001)
             {
                 http.end();
                 log_i("Will not update as I am version:%1.2f and you are offering version:%1.2f\n", version.toFloat(), FIRMWARE_VERSION);
@@ -201,7 +203,7 @@ int ota()
                 // Start update
                 size_t written = 0;
                 size_t gotten = 1;
-                if (http.begin(client, firmwareURL))
+                if (http.begin(client, updateURL))
                 {
                     if (http.GET() == 200)
                     {
