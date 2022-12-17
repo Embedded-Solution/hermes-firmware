@@ -5,7 +5,6 @@
 #include <Hal/TinyGPS++.h>
 #include <TimeLib.h>
 
-#include <Navigation/Navigation.hpp>
 #include <Hal/remora-hal.h>
 #include <Types.hpp>
 
@@ -14,7 +13,7 @@
 #include <hal/MS5837.hpp>
 #include <Settings.hpp>
 
-class GNSS : public Navigation
+class GNSS 
 {
 public:
     GNSS();

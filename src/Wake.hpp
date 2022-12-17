@@ -24,5 +24,6 @@ void startStaticDive();
 void staticDiveWakeUp();
 void selectMode();
 bool detectSurface();
+void test_accel();
 
 #endif

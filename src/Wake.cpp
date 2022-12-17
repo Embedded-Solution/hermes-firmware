@@ -1,8 +1,10 @@
 #include <Wake.hpp>
+#include <Sensors/AccelGiro.hpp>
 
 using namespace std;
 SecureDigital sd;
 
+AccelGiro imu;
 // variables permanentes pour le mode de plongée statique
 RTC_DATA_ATTR Dive staticDive(&sd);
 RTC_DATA_ATTR bool diveMode = 0; // 0:dynamic, 1:static
@@ -83,6 +85,8 @@ void wake()
                 else if (i == GPIO_VCC_SENSE) // wifi config
                 {
                     log_d("Wake up gpio vcc sense");
+                    while (1)
+                        test_accel();
 
                     // While wifi not set, shutdown if usb is disconnected
                     attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
@@ -91,6 +95,7 @@ void wake()
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
                 {
+
                     log_d("Wake up gpio config");
                     selectMode();
                 }
@@ -161,7 +166,7 @@ void dynamicDive()
                     {
                         log_d("Valid Dive, reset counter end dive");
                         validDive = true; // if minDepth reached, dive is valid
-                        count = 0; //reset count before detect end of dive
+                        count = 0;        // reset count before detect end of dive
                     }
                 }
 
@@ -380,4 +385,53 @@ bool detectSurface()
         return 1;
     else
         return 0;
+}
+
+void test_accel()
+{
+    imu.begin();
+
+    while (1)
+    {
+        /*
+        // Update the sensor values whenever new data is available
+        if (imu.gyroAvailable())
+        {
+            // To read from the gyroscope,  first call the
+            // readGyro() function. When it exits, it'll update the
+            // gx, gy, and gz variables with the most current data.
+            imu.readGyro();
+        }
+        */
+        if (imu.accelAvailable())
+        {
+            // To read from the accelerometer, first call the
+            // readAccel() function. When it exits, it'll update the
+            // ax, ay, and az variables with the most current data.
+            imu.readAccel();
+        }
+        /*
+        if (imu.magAvailable())
+        {
+            // To read from the magnetometer, first call the
+            // readMag() function. When it exits, it'll update the
+            // mx, my, and mz variables with the most current data.
+            imu.readMag();
+        }
+*/
+        if ((lastPrint + PRINT_SPEED) < millis())
+        {
+           // imu.printGyro();  // Print "G: gx, gy, gz"
+            imu.printAccel(); // Print "A: ax, ay, az"
+            //imu.printMag();   // Print "M: mx, my, mz"
+            // Print the heading and orientation for fun!
+            // Call print attitude. The LSM9DS1's mag x and y
+            // axes are opposite to the accelerometer, so my, mx are
+            // substituted for each other.
+           // imu.printAttitude();
+           // Serial.println();
+
+            lastPrint = millis(); // Update lastPrint time
+        }
+    }
 }
