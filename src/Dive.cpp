@@ -70,7 +70,7 @@ String Dive::End(long time, lat lat, lng lng, bool mode)
 
 int Dive::NewRecord(Record r)
 {
-    log_d("%d :\tTime=%ld\tTemp=%2.3f\t Depth=%2.3f", currentRecords, r.Time, r.Temp, r.Depth);
+    //log_d("%d :\tTime=%ld\tTemp=%2.3f\t Depth=%2.3f", currentRecords, r.Time, r.Temp, r.Depth);
 
     diveRecords[currentRecords] = r;
     currentRecords++;
