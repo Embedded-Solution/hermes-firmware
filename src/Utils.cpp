@@ -99,3 +99,39 @@ float readBattery()
 
     return vBat;
 }
+
+void TaskLedBatteryCode(void *parameter)
+{
+    unsigned long previousMillis = 0;
+    bool ledState = HIGH;
+    float batteryLevel = readBattery();
+    for (;;)
+    {
+
+        // check batteryLevel every
+
+        if (batteryLevel < BATTERY_LEVEL_25)
+        {
+            digitalWrite(GPIO_LED4, HIGH); //led diving off 
+            // Blink led error if battery level < 25%
+            unsigned long currentMillis = millis();
+            if (currentMillis - previousMillis >= BLINK_INTERVAL)
+            {
+                ledState = (ledState == LOW) ? HIGH : LOW;
+                digitalWrite(GPIO_LED1, ledState);
+                previousMillis = currentMillis;
+            }
+        }
+        else if (batteryLevel > BATTERY_LEVEL_75)
+        {
+            digitalWrite(GPIO_LED1, HIGH); // led error off
+            digitalWrite(GPIO_LED4, LOW);  // led diving on
+        }
+        else
+        {
+            // all leds off
+            digitalWrite(GPIO_LED1, HIGH);
+            digitalWrite(GPIO_LED4, HIGH);
+        }
+    }
+}

@@ -10,5 +10,6 @@
 String remoraID();
 void sleep(int mode = 0);
 float readBattery();
+void TaskLedBatteryCode(void *parameter);
 
 #endif

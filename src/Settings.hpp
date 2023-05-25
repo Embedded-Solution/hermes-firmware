@@ -31,6 +31,8 @@
 #define TIME_UPLOAD_OTA 1800             // Time between 2 upload and OTA check (seconds)
 #define LOW_BATTERY_LEVEL 3.3            //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
 #define TIME_CHECK_POWER 60              // Time between 2 battery ccheck during dynamic dive. (seconds)
+#define BATTERY_LEVEL_25 3.7 //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
+#define BATTERY_LEVEL_75 3.9 //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
 #define MIN_DEPTH_CHECK_AMPLITUDE 2.0    // min depth to check amplitude of depth before ending dive. (meter)
 #define ENDING_DIVE_DEPTH_AMPLITUDE 0.08 // min depth amplitude to end dive, if depth amplitude below val, diver is out of water.
 
