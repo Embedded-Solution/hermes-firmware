@@ -214,10 +214,17 @@ void dynamicDive()
                         digitalWrite(GPIO_LED4, LOW);
                     led_on = !led_on;
 
-                    // check battery, back to sleep  witjout water detection if lowBat
-                    if (timer % TIME_CHECK_BATTERY == 0)
+                    // check battery, back to sleep  without water detection if lowBat
+                    if (timer % TIME_CHECK_POWER == 0)
+                    {
                         if (readBattery() < LOW_BATTERY_LEVEL)
                             sleep(LOW_BATT_SLEEP);
+
+                        pinMode(GPIO_VCC_SENSE, INPUT);
+                        if (digitalRead(GPIO_VCC_SENSE))
+                            endDive = true;
+                        pinMode(GPIO_VCC_SENSE, OUTPUT);
+                    }
 
                     /////////////////// Depth Running Amplitude & average to detect end of dive/////////////
                     depthRAvg.addValue(depth);
@@ -345,8 +352,8 @@ void staticDiveWakeUp()
     Record tempRecord = Record{temp, depth, staticTime};
     staticDive.NewRecordStatic(tempRecord);
 
-    // check battery, back to sleep  witjout water detection if lowBat
-    if (staticTime % TIME_CHECK_BATTERY == 0)
+    // check battery and USB power , back to sleep  without water detection if lowBat
+    if (staticTime % TIME_CHECK_POWER == 0)
         if (readBattery() < LOW_BATTERY_LEVEL)
             sleep(LOW_BATT_SLEEP);
 
