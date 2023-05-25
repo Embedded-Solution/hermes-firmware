@@ -2,11 +2,12 @@
 #include <Wake.hpp>
 #include "Settings.hpp"
 
+TaskHandle_t Task1;
+
 void setup()
 {
     Serial.begin(115200);
-    delay(100);
-
+    delay(100); 
 
 #ifdef SERIAL1_DEBUG_OUTPUT
     Serial1.begin(115200);
