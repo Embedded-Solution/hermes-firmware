@@ -25,7 +25,6 @@ int uploadDives(SecureDigital sd)
 
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it)
     {
-        log_i("NEW DIVE TO UPLOAD");
 
         error = false;
         String ID = it->key().c_str();
@@ -39,6 +38,7 @@ int uploadDives(SecureDigital sd)
         {
             continue;
         }
+        log_i("NEW DIVE TO UPLOAD");
 
         String path = "/" + ID + "/metadata.json";
         String metadata = sd.readFile(path);
@@ -303,7 +303,6 @@ void startPortal(SecureDigital sd)
 
 int ota(SecureDigital sd)
 {
-    delay(10000);
     sd = SecureDigital();
 
     String firmwareName;
