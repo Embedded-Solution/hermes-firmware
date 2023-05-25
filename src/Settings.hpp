@@ -6,7 +6,7 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION 3.6
+#define FIRMWARE_VERSION 3.7
 
 // Debug parameters
 // #define MODE_DEBUG
