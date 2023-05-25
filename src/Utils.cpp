@@ -94,7 +94,7 @@ float readBattery()
     pinMode(GPIO_VBATT, INPUT_PULLUP);
     float val = analogRead(GPIO_VBATT);
     float vBat = ((val / 4095.0)) * 3.3 * 1.33;
-    log_d("Batterie = %1.2f", vBat);
+    log_i("Batterie = %1.2f", vBat);
     pinMode(GPIO_VBATT, OUTPUT);
 
     return vBat;
@@ -102,36 +102,41 @@ float readBattery()
 
 void TaskLedBatteryCode(void *parameter)
 {
-    unsigned long previousMillis = 0;
+    unsigned long previousMillisLed = 0, previousMillisBattery = 0;
     bool ledState = HIGH;
     float batteryLevel = readBattery();
     for (;;)
     {
+        unsigned long currentMillis = millis();
 
-        // check batteryLevel every
+        // check batteryLevel every 10s
+        if (currentMillis - previousMillisBattery >= 10000)
+        {
+            batteryLevel = readBattery();
+            previousMillisBattery = currentMillis;
+        }
 
         if (batteryLevel < BATTERY_LEVEL_25)
         {
-            digitalWrite(GPIO_LED4, HIGH); //led diving off 
-            // Blink led error if battery level < 25%
-            unsigned long currentMillis = millis();
-            if (currentMillis - previousMillis >= BLINK_INTERVAL)
+            digitalWrite(GPIO_LED4, LOW); // led diving off
+            if (currentMillis - previousMillisLed >= 500)
             {
                 ledState = (ledState == LOW) ? HIGH : LOW;
                 digitalWrite(GPIO_LED1, ledState);
-                previousMillis = currentMillis;
+                previousMillisLed = currentMillis;
             }
         }
+
         else if (batteryLevel > BATTERY_LEVEL_75)
         {
-            digitalWrite(GPIO_LED1, HIGH); // led error off
-            digitalWrite(GPIO_LED4, LOW);  // led diving on
+            digitalWrite(GPIO_LED1, LOW); // led error off
+            digitalWrite(GPIO_LED4, HIGH);  // led diving on
         }
         else
         {
             // all leds off
-            digitalWrite(GPIO_LED1, HIGH);
-            digitalWrite(GPIO_LED4, HIGH);
+            digitalWrite(GPIO_LED1, LOW);
+            digitalWrite(GPIO_LED4, LOW);
         }
     }
 }
