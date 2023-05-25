@@ -1,21 +1,5 @@
 #include <Connect.hpp>
 
-void Task1code(void *parameter)
-{
-    unsigned long previousMillis = 0;
-    bool ledState = HIGH;
-    for (;;)
-    {
-        // Blink led error if battery level < 25%
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= BLINK_INTERVAL)
-        {
-            ledState = (ledState == LOW) ? HIGH : LOW;
-            digitalWrite(GPIO_LED1, ledState);
-            previousMillis = currentMillis;
-        }
-    }
-}
 
 int uploadDives(SecureDigital sd)
 {
@@ -276,8 +260,8 @@ void startPortal(SecureDigital sd)
     Portal.begin();
     long previous = -1000000000;
 
-    TaskHandle_t Task1;
-    xTaskCreatePinnedToCore(Task1code, "Task1", 10000, NULL, 0, &Task1, 0);
+    TaskHandle_t TaskLedBattery;
+    xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
 
     while (WiFi.status() == WL_DISCONNECTED)
     {
