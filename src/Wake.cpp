@@ -222,7 +222,10 @@ void dynamicDive()
 
                         pinMode(GPIO_VCC_SENSE, INPUT);
                         if (digitalRead(GPIO_VCC_SENSE))
+                        {
                             endDive = true;
+                            log_d("GPIO VCC SENSE DETECTED");
+                        }
                         pinMode(GPIO_VCC_SENSE, OUTPUT);
                     }
 
@@ -237,7 +240,7 @@ void dynamicDive()
                             count++;
                         else
                             count = 0;
-                        // log_i("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
+                        // log_d("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
                     }
                     else
                     {
