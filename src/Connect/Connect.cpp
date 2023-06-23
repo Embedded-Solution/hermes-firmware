@@ -1,5 +1,4 @@
-#include <Connect.hpp>
-
+#include "Connect.hpp"
 
 int uploadDives(SecureDigital sd)
 {
@@ -245,7 +244,7 @@ void startPortal(SecureDigital sd)
 
     AutoConnectConfig acConfig("Remora Config", "cousteau", 0, AUTOCONNECT_AP_CH);
     acConfig.hostName = String("Remora");
-    acConfig.homeUri = "/";
+    acConfig.homeUri = "/remora";
     acConfig.autoReconnect = true;
     acConfig.autoReset = false;
     acConfig.portalTimeout = 15 * 60 * 1000;
@@ -253,11 +252,19 @@ void startPortal(SecureDigital sd)
     acConfig.ticker = true;
     acConfig.tickerPort = GPIO_LED3;
     acConfig.tickerOn = LOW;
-    acConfig.menuItems = acConfig.menuItems | AC_MENUITEM_DEVINFO;
-    acConfig.menuItems = acConfig.menuItems | AC_MENUITEM_DELETESSID;
+    acConfig.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_OPENSSIDS | AC_MENUITEM_DELETESSID;
 
     Portal.config(acConfig);
+
+    Portal.load(page);
+
+    SPIFFS.end();
+
     Portal.begin();
+    if (MDNS.begin("remora"))
+    {
+        MDNS.addService("http", "tcp", 80);
+    }
     long previous = -1000000000;
 
     TaskHandle_t TaskLedBattery;

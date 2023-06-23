@@ -12,7 +12,7 @@
 #include <Storage/SecureDigital.hpp>
 #include <Navigation/GNSS.hpp>
 #include <Utils.hpp>
-#include <Connect.hpp>
+#include <Connect/Connect.hpp>
 #include <Settings.hpp>
 #include <RunningAverage/RunningAverage.hpp>
 
