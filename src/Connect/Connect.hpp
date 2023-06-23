@@ -12,6 +12,7 @@
 #include <ArduinoJson.h>
 #include <Dive.hpp>
 #include <secret.hpp>
+#include <ESPmDNS.h>
 
 #define SUCCESS 0
 #define FIRMWARE_SIZE_ERROR -2
@@ -51,5 +52,41 @@ long checkId(String data);
 int putEndTransfer(unsigned long bddID);
 
 const int jsonSize = 27000;
+
+
+ // AutoConnectAux as a custom Web page.
+const char page[] PROGMEM = R"raw(
+  {
+    "title": "Home",
+    "uri": "/home",
+    "menu": true,
+    "element": [
+      {
+        "name": "header",
+        "type": "ACText",
+        "value": "<h2>Remora Wifi settings</h2>",
+        "style": "text-align:center;color:#2f4f4f;padding:10px;"
+      },
+      {
+        "name": "caption",
+        "type": "ACText",
+        "value": "Configure new Wifi Connexion<br>",
+        "style": "font-family:serif;color:#4682b4;"
+      },
+      {
+        "name": "new",
+        "type": "ACSubmit",
+        "value": "New",
+        "uri": "/_ac/config"
+      },
+      {
+        "name": "manage",
+        "type": "ACSubmit",
+        "value": "Manage",
+        "uri": "/_ac/open"
+      }
+    ]
+  }
+)raw";
 
 #endif

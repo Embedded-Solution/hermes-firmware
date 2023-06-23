@@ -9,7 +9,7 @@
 #include <Storage/Storage.hpp>
 #include <Types.hpp>
 #include <Utils.hpp>
-#include <Connect.hpp>
+#include <Connect/Connect.hpp>
 
 using namespace std;
 
