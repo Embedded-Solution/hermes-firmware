@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <TimeLib.h>
-#include <AutoConnect.h>
 #include <Storage/SecureDigital.hpp>
 #include <Navigation/GNSS.hpp>
 #include <Utils.hpp>
@@ -12,17 +11,12 @@
 #include <ArduinoJson.h>
 #include <Dive.hpp>
 #include <secret.hpp>
-#include <ESPmDNS.h>
 
 #define SUCCESS 0
 #define FIRMWARE_SIZE_ERROR -2
 #define GET_FIRMWARE_ERROR -3
 #define CONNECTION_ERROR -4
 #define HTTP_BEGIN_ERROR -5
-
-/// @brief Start Remora AP for WIFI configuration
-/// @param sd
-void startPortal(SecureDigital sd);
 
 /// @brief Upload dives not yet send to recordURL
 /// @param sd
@@ -52,41 +46,5 @@ long checkId(String data);
 int putEndTransfer(unsigned long bddID);
 
 const int jsonSize = 27000;
-
-
- // AutoConnectAux as a custom Web page.
-const char page[] PROGMEM = R"raw(
-  {
-    "title": "Home",
-    "uri": "/home",
-    "menu": true,
-    "element": [
-      {
-        "name": "header",
-        "type": "ACText",
-        "value": "<h2>Remora Wifi settings</h2>",
-        "style": "text-align:center;color:#2f4f4f;padding:10px;"
-      },
-      {
-        "name": "caption",
-        "type": "ACText",
-        "value": "Configure new Wifi Connexion<br>",
-        "style": "font-family:serif;color:#4682b4;"
-      },
-      {
-        "name": "new",
-        "type": "ACSubmit",
-        "value": "New",
-        "uri": "/_ac/config"
-      },
-      {
-        "name": "manage",
-        "type": "ACSubmit",
-        "value": "Manage",
-        "uri": "/_ac/open"
-      }
-    ]
-  }
-)raw";
 
 #endif
