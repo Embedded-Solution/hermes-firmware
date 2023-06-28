@@ -6,6 +6,13 @@
 #include <Settings.hpp>
 #include <secret.hpp>
 #include <ESPmDNS.h>
+#include <Storage/SecureDigital.hpp>
+#include <Hal\remora-hal.h>
+#include <Utils.hpp>
+#include <Connect/Connect.hpp>
+
+
+
 
 /// @brief Start Remora AP for WIFI configuration
 /// @param sd
@@ -13,6 +20,7 @@ void startPortal(SecureDigital sd);
 
 /// @brief Delete all saved credentials 
 void deleteAllCredentials(void);
+bool checkDeleteCredentials(void);
 
  // AutoConnectAux as a custom Web page.
 const char page[] PROGMEM = R"raw(

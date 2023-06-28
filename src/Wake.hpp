@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include <TimeLib.h>
 #include <AutoConnect.h>
-
+#include <Connect/WifiManager.hpp>
 #include <Dive.hpp>
 #include <hal/TSYS01.hpp>
 #include <hal/MS5837.hpp>

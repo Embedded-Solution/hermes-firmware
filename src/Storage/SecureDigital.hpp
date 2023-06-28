@@ -45,8 +45,8 @@ public:
         {
             log_v("UNKNOWN");
         }
-        uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-        log_d("SD Card Size: %lluMB\n", cardSize);
+      //  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+      //  log_d("SD Card Size: %lluMB\n", cardSize);
         m_ready = true;
     };
 
