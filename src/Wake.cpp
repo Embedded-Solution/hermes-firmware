@@ -82,12 +82,16 @@ void wake()
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
                 {
-                    log_d("Wake up gpio config");
+                    log_d("Check delete credentials");
+                    if (checkDeleteCredentials() == false)
+                    {
+                        log_d("Wake up gpio config");
 #ifdef MODE_DEBUG
-                    dynamicDive();
+                        dynamicDive();
 #else
-                    selectMode();
+                        selectMode();
 #endif
+                    }
                 }
             }
 
