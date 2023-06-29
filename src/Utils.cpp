@@ -46,7 +46,7 @@ void sleep(int mode)
     case DEFAULT_SLEEP:
         log_i("DEFAULT SLEEP");
         pinMode(GPIO_PROBE, INPUT); // Set GPIO PROBE back to input to allow water detection
-#ifndef MODE_DEBUG
+#if MODE_DEBUG == true
         wakeMask = 1ULL << GPIO_WATER | 1ULL << GPIO_CONFIG | 1ULL << GPIO_VCC_SENSE;
 #else
         wakeMask = 1ULL << GPIO_WATER | 1ULL << GPIO_CONFIG;
@@ -76,7 +76,7 @@ void sleep(int mode)
         digitalWrite(GPIO_PROBE, LOW);
         gpio_hold_en(GPIO_NUM_33);
         gpio_deep_sleep_hold_en();
-#ifndef MODE_DEBUG
+#if MODE_DEBUG == true
         wakeMask = 1ULL << GPIO_CONFIG | 1ULL << GPIO_VCC_SENSE;
 #else
         wakeMask = 1ULL << GPIO_CONFIG;
@@ -129,8 +129,8 @@ void TaskLedBatteryCode(void *parameter)
 
         else if (batteryLevel > BATTERY_LEVEL_75)
         {
-            digitalWrite(GPIO_LED1, LOW); // led error off
-            digitalWrite(GPIO_LED4, HIGH);  // led diving on
+            digitalWrite(GPIO_LED1, LOW);  // led error off
+            digitalWrite(GPIO_LED4, HIGH); // led diving on
         }
         else
         {

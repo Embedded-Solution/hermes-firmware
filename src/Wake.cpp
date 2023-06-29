@@ -19,7 +19,7 @@ void IRAM_ATTR ISR()
 void wake()
 {
     // setup gpios
-    log_n("firmware version:%1.2f\n", FIRMWARE_VERSION);
+    log_i("firmware version:%1.2f\n", FIRMWARE_VERSION);
     sd.writeFile("/version.txt", String(FIRMWARE_VERSION));
 
     pinMode(GPIO_LED1, OUTPUT);
@@ -86,8 +86,8 @@ void wake()
                     if (checkDeleteCredentials() == false)
                     {
                         log_d("Wake up gpio config");
-#ifdef MODE_DEBUG
-                        dynamicDive();
+#if MODE_DEBUG == true
+                    dynamicDive();
 #else
                         selectMode();
 #endif
@@ -113,7 +113,7 @@ void dynamicDive()
     // If not, do not start dynamic dive
 // detect if the wake up is because of diving or not
 // If not, do not start recording
-#ifdef MODE_DEBUG
+#if MODE_DEBUG == true
     if (true)
 #else
     if (detectSurface(BEGIN_SURFACE_DETECTION))
