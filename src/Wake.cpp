@@ -175,6 +175,7 @@ void dynamicDive()
             while (!endDive)
             {
                 currentTime = gps.getTime();
+                log_d("Current Time : %d\t StartTime : %d", currentTime, startTime);
 
                 if (currentTime != previousTime) // check if time changed
                 {
@@ -188,8 +189,8 @@ void dynamicDive()
                     timer += TIME_DYNAMIC_MODE; // get time in seconds since wake up
 
                     temp = temperatureSensor.getTemp();
-                    depth = depthSensor.getDepth(temp);
-                    log_i("Temp = %2.2f\t Depth = %4.4f", temp, depth);
+                    depth = depthSensor.getDepth();
+                    // log_i("Temp = %2.2f\t Depth = %3.3f\t Pressure = %4.4f", temp, depth, depthSensor.getPressure());
 
                     ///////////////// Detect end of dive ////////////////////
                     // if dive still not valid, check if depthMin reached
@@ -240,7 +241,7 @@ void dynamicDive()
                             count++;
                         else
                             count = 0;
-                        // log_d("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
+                        // log_i("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
                     }
                     else
                     {
@@ -307,7 +308,7 @@ void startStaticDive()
         staticTime = 0;
 
         temp = temperatureSensor.getTemp();
-        depth = depthSensor.getDepth(temp);
+        depth = depthSensor.getDepth();
 
         Record tempRecord = Record{temp, depth, staticTime};
         staticDive.NewRecordStatic(tempRecord);
@@ -329,7 +330,7 @@ void staticDiveWakeUp()
     double depth, temp;
 
     temp = temperatureSensor.getTemp();
-    depth = depthSensor.getDepth(temp);
+    depth = depthSensor.getDepth();
 
     staticTime += TIME_TO_SLEEP_STATIC;
 
@@ -408,9 +409,8 @@ bool detectSurface(float levelSurfaceDetection)
     Wire.begin(I2C_SDA, I2C_SCL);
     delay(10);
 
-    tsys01 temperatureSensor = tsys01();
     ms5837 depthSensor = ms5837();
-    double depth = 0, temp = 0, min = 999, max = -999;
+    double depth = 0, min = 999, max = -999;
     int count = 0, avgCount = 0;
     double avg = 0;
     unsigned long start = millis();
@@ -420,8 +420,7 @@ bool detectSurface(float levelSurfaceDetection)
         while (count < 10)
         {
             count++;
-            temp = temperatureSensor.getTemp();
-            depth = depthSensor.getDepth(temp);
+            depth = depthSensor.getDepth();
             log_d("Depth = %f", depth);
             if (depth < min)
                 min = depth;

@@ -78,7 +78,7 @@ Position GNSS::parseRecord(struct Record *records)
     tsys01 temperatureSensor = tsys01();
     ms5837 depthSensor = ms5837();
     double temp = temperatureSensor.getTemp();
-    double depth = depthSensor.getDepth(temp);
+    double depth = depthSensor.getDepth();
 
     unsigned long previousTime = 0, currentTime = 0;
     int idRecord = 0;
@@ -120,8 +120,7 @@ Position GNSS::parseRecord(struct Record *records)
                 pos.Lat = (lat)gps.location.lat();
                 pos.Lng = (lng)gps.location.lng();
             }
-            temp = temperatureSensor.getTemp();
-            depth = depthSensor.getDepth(temp);
+            depth = depthSensor.getDepth();
             currentTime = getTime();
 
             if (currentTime != previousTime) // check if time changed

@@ -27,6 +27,7 @@ ms5837::ms5837()
         _msCalibrationValue[i] = (Wire.read() << 8) | Wire.read();
 
         log_v("calibration value %d: %d\n", i, _msCalibrationValue[i]);
+
     }
 
     // Verify that data is correct with CRC
@@ -111,7 +112,8 @@ void ms5837::readValues()
     _rawTemp = (_rawTemp << 8) | Wire.read();
     _rawTemp = (_rawTemp << 8) | Wire.read();
 
-    log_v("rawTemp: %u rawPressure: %u", _rawTemp, _rawPres);
+    log_v("rawTemp: %u rawPressure: %u\n", _rawTemp, _rawPres);
+
 }
 
 void ms5837::computeTemp()
@@ -146,39 +148,5 @@ temperature ms5837::getTemp()
 depth ms5837::getDepth()
 {
     computePressure();
-    return ((_pressure * _pa) - 101300) / (_fluidDensity * 9.80665f);
-}
-
-depth ms5837::getDepth(double temp)
-{
-     readValues();
-
-    _deltaTemp = (temp * 100 - 2000) / _msCalibrationValue[6] * pow(2, 23);
-
-    int64_t offset = _msCalibrationValue[2] * pow(2, 16) + (_msCalibrationValue[4] * _deltaTemp) / pow(2, 7);
-    int64_t sensitivity = _msCalibrationValue[1] * pow(2, 15) + (_msCalibrationValue[3] * _deltaTemp) / pow(2, 8);
-    _pressure = ((_rawPres * sensitivity / pow(2, 21) - offset) / pow(2, 13)) / 10;
-/*
-    int64_t  offi, sensi;
-    if (temp < 20)
-    {
-        //  Ti = 3 * _deltaTemp * _deltaTemp / pow(2, 33);
-        offi = 3 * (temp * 100 - 2000) * (temp * 100 - 2000) / pow(2, 1);
-        sensi = 5 * (temp * 100 - 2000) * (temp * 100 - 2000) / pow(2, 3);
-    }
-    else
-    {
-        // Ti = 2 * _deltaTemp * _deltaTemp / pow(2, 37);
-        offi = (temp * 100 - 2000) * (temp * 100 - 2000) / pow(2, 4);
-        sensi = 0;
-    }
-
-    int64_t off2 = offset - offi;
-    int64_t sens2 = sensitivity - sensi;
-
-    int32_t press2 = (((_rawPres * sens2) / pow(2, 21) - off2) / pow(2, 13)) / 10;
-    int32_t pressure2 = ((press2 * _pa) - 101300) / (_fluidDensity * 9.80665f);
-    log_v("press2 = %4.4f\tsensitivity = %u\t sens2 = %u", pressure2, sensitivity, sens2);
-*/
     return ((_pressure * _pa) - 101300) / (_fluidDensity * 9.80665f);
 }
