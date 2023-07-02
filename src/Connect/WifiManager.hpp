@@ -39,7 +39,7 @@ const char page[] PROGMEM = R"raw(
         "name": "caption",
         "type": "ACText",
         "value": "Configure new Wifi Connexion<br>",
-        "style": "font-family:serif;color:#4682b4;"
+        "style": "font-family:serif;color:#070C12;"
       },
       {
         "name": "new",
