@@ -10,7 +10,7 @@
 
 // Debug parameters
 // #define MODE_DEBUG
-// #define SERIAL1_DEBUG_OUTPUT
+ #define SERIAL1_DEBUG_OUTPUT
 
 // Dives parameters
 #define OFFSET_SLEEP_STATIC 1700         /*Offset going to sleep and wake up static mode*/

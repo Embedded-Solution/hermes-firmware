@@ -179,7 +179,6 @@ void dynamicDive()
             while (!endDive)
             {
                 currentTime = gps.getTime();
-                log_d("Current Time : %d\t StartTime : %d", currentTime, startTime);
 
                 if (currentTime != previousTime) // check if time changed
                 {

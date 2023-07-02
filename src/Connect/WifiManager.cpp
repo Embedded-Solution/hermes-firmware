@@ -101,14 +101,14 @@ void deleteAllCredentials(void)
 bool checkDeleteCredentials(void)
 {
   bool exit = false;
-  int timer = millis();
-  while (exit == false && (millis() - timer) / 1000 > TIMER_DEL_CREDENTIALS)
+  unsigned long timer = millis();
+  while (exit == false && (millis() - timer) / 1000 <= TIMER_DEL_CREDENTIALS)
   {
-    if (digitalRead(GPIO_CONFIG) == true) // if button released, exit = true
+    if (digitalRead(GPIO_CONFIG) == false) // if button released, exit = true
       exit = true;
   }
 
-  if (exit == true) // if cinfig button released before timer end, leave without delte credentials
+  if (exit == true) // if config button released before timer end, leave without delete credentials
   {
     log_d("leave without deleting credentials");
     return false;
@@ -119,7 +119,7 @@ bool checkDeleteCredentials(void)
     deleteAllCredentials();
 
     // blink leds
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 5; i++)
     {
       digitalWrite(GPIO_LED1, HIGH);
       digitalWrite(GPIO_LED2, HIGH);
