@@ -6,7 +6,7 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION 3.63
+#define FIRMWARE_VERSION 3.65
 
 // Debug parameters
 //#define MODE_DEBUG
@@ -24,7 +24,7 @@
 #define MAX_DEPTH_CHECK_WATER 0.5        /* Max depth for water detection (meter)*/
 #define MAX_DEPTH_CHECK_GPS 1.0          /* Max depth for gps detection (meter)*/
 #define MAX_DYNAMIC_COUNTER_VALID_DIVE 1 /* Number of No Water to end dynamic dive (TIME_DYNAMIC_MODE / 1000 * MAX_DYNAMIC_COUNTER = seconds)*/
-#define MAX_DYNAMIC_COUNTER_NO_DIVE 300  /* Number of No Water to end dynamic dive (TIME_DYNAMIC_MODE / 1000 * MAX_DYNAMIC_COUNTER = seconds)*/
+#define MAX_DYNAMIC_COUNTER_NO_DIVE 600  /* Number of No Water to end dynamic dive (TIME_DYNAMIC_MODE / 1000 * MAX_DYNAMIC_COUNTER = seconds)*/
 #define MAX_STATIC_COUNTER 2             /* Number of No Water to end static dive (TIME_TO_SLEEP_STATIC * MAX_STATIC_COUNTER = seconds )*/
 #define WATER_TRIGGER 1500               // mV water detection level (0 to 3300) (lower value for pure water)
 #define TIME_GPS_START 600               // research time gps at the beginning of the dive(seconds)
@@ -37,7 +37,7 @@
 #define TIME_UPLOAD_OTA 1800             // Time between 2 upload and OTA check (seconds)
 #define TIME_CHECK_POWER 60              // Time between 2 battery ccheck during dynamic dive. (seconds)
 #define MIN_DEPTH_CHECK_AMPLITUDE 2.0    // min depth to check amplitude of depth before ending dive. (meter)
-#define ENDING_DIVE_DEPTH_AMPLITUDE 0.08 // min depth amplitude to end dive, if depth amplitude below val, diver is out of water.
+#define ENDING_DIVE_DEPTH_AMPLITUDE 0.15 // min depth amplitude to end dive, if depth amplitude below val, diver is out of water.
 #define TIMER_DEL_CREDENTIALS 10         // Time to press config button to delete all credentials 
  
 // Upload parameters
