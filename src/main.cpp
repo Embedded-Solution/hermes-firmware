@@ -41,7 +41,7 @@ void setup()
     }
 #endif
 
-#if SERIAL1_DEBUG_OUTPUT == true
+#ifdef SERIAL1_DEBUG_OUTPUT
     Serial1.begin(115200);
     delay(100);
     Serial1.setDebugOutput(true);

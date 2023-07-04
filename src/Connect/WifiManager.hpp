@@ -11,18 +11,23 @@
 #include <Utils.hpp>
 #include <Connect/Connect.hpp>
 
+class WifiManager
+{
 
+public:
+  /// @brief Start Remora AP for WIFI configuration
+  /// @param sd
+  void startPortal(SecureDigital sd);
 
+  bool checkDeleteCredentials(void);
 
-/// @brief Start Remora AP for WIFI configuration
-/// @param sd
-void startPortal(SecureDigital sd);
+private:
+  /// @brief Delete all saved credentials
+  void deleteAllCredentials(void);
 
-/// @brief Delete all saved credentials 
-void deleteAllCredentials(void);
-bool checkDeleteCredentials(void);
+};
 
- // AutoConnectAux as a custom Web page.
+// WifiManager as a custom Web page.
 const char page[] PROGMEM = R"raw(
   {
     "title": "Home",

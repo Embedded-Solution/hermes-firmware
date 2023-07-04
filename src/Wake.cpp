@@ -2,6 +2,7 @@
 
 using namespace std;
 SecureDigital sd;
+WifiManager wm;
 
 // variables permanentes pour le mode de plongée statique
 RTC_DATA_ATTR Dive staticDive(&sd);
@@ -78,15 +79,15 @@ void wake()
                     // While wifi not set, shutdown if usb is disconnected
                     attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
 
-                    startPortal(sd);
+                    wm.startPortal(sd);
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
                 {
                     log_d("Check delete credentials");
-                    if (checkDeleteCredentials() == false)
+                    if (wm.checkDeleteCredentials() == false)
                     {
                         log_d("Wake up gpio config");
-#if MODE_DEBUG == true
+#ifdef MODE_DEBUG
                     dynamicDive();
 #else
                         selectMode();
@@ -113,7 +114,7 @@ void dynamicDive()
     // If not, do not start dynamic dive
 // detect if the wake up is because of diving or not
 // If not, do not start recording
-#if MODE_DEBUG == true
+#ifdef MODE_DEBUG
     if (true)
 #else
     if (detectSurface(BEGIN_SURFACE_DETECTION))

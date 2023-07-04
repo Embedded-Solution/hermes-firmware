@@ -1,6 +1,6 @@
 #include "WifiManager.hpp"
 
-void startPortal(SecureDigital sd)
+void WifiManager::startPortal(SecureDigital sd)
 {
   WebServer Server;
   AutoConnect Portal(Server);
@@ -73,7 +73,7 @@ void startPortal(SecureDigital sd)
   sleep(DEFAULT_SLEEP);
 }
 
-void deleteAllCredentials(void)
+void WifiManager::deleteAllCredentials(void)
 {
   AutoConnectCredential credential;
   station_config_t config;
@@ -98,7 +98,7 @@ void deleteAllCredentials(void)
   }
 }
 
-bool checkDeleteCredentials(void)
+bool WifiManager::checkDeleteCredentials(void)
 {
   bool exit = false;
   unsigned long timer = millis();
