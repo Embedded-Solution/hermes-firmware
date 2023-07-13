@@ -9,10 +9,11 @@ void WifiManager::startPortal(SecureDigital sd)
 
   AutoConnectConfig acConfig("Remora Config", "cousteau", 0, AUTOCONNECT_AP_CH);
   acConfig.hostName = String("Remora");
-  acConfig.homeUri = "/remora";
+  acConfig.bootUri = AC_ONBOOTURI_HOME;
+  acConfig.homeUri = "/home";
   acConfig.autoReconnect = true;
   acConfig.autoReset = false;
-  acConfig.portalTimeout = 15 * 60 * 1000;
+  // acConfig.portalTimeout = 15 * 60 * 1000;
   acConfig.title = "Remora Config";
   acConfig.ticker = true;
   acConfig.tickerPort = GPIO_LED3;
