@@ -153,10 +153,10 @@ void dynamicDive()
             gpsRecords[x] = {-1000, 0, 0};
 
         // get gps position, dateTime and records during gps search.
-        Position pos = gps.parseRecord(gpsRecords);
+        Position startPos = gps.parseRecord(gpsRecords);
         // unsigned long startTime = pos.dateTime;
 
-        if (d.Start(pos.dateTime, pos.Lat, pos.Lng, TIME_DYNAMIC_MODE, diveMode) != "")
+        if (d.Start(startPos.dateTime, startPos.Lat, startPos.Lng, TIME_DYNAMIC_MODE, diveMode) != "")
         {
             int timer = 0;
 
@@ -175,6 +175,7 @@ void dynamicDive()
             double depth, temp;
             unsigned long previousTime = 0, currentTime = 0;
             int secondCount = 0;
+            bool lowBat = false, vccSense = false;
 
             // if valid dive, dive end after short time, if dive still not valid, dive end after long time
             while (!endDive)
@@ -223,12 +224,16 @@ void dynamicDive()
                     if (timer % TIME_CHECK_POWER == 0)
                     {
                         if (readBattery() < LOW_BATTERY_LEVEL)
-                            sleep(LOW_BATT_SLEEP);
+                        {
+                            lowBat = true;
+                            endDive = true;
+                        }
 
                         pinMode(GPIO_VCC_SENSE, INPUT);
                         if (digitalRead(GPIO_VCC_SENSE))
                         {
                             endDive = true;
+                            vccSense = true;
                             log_d("GPIO VCC SENSE DETECTED");
                         }
                         pinMode(GPIO_VCC_SENSE, OUTPUT);
@@ -260,20 +265,31 @@ void dynamicDive()
                 }
             }
 
+            String end;
             // if dive valid (Pmin reached) get end GPS, else delete records and clean index
-            if (validDive)
+            if (validDive && !lowBat && !vccSense)
             {
                 Position endPos = gps.parseEnd();
-                String end = d.End(endPos.dateTime, endPos.Lat, endPos.Lng, diveMode);
-                if (end == "")
-                {
-                    log_e("error ending the dive");
-                }
+                end = d.End(endPos.dateTime, endPos.Lat, endPos.Lng, diveMode);
+            }
+            else if (validDive && lowBat && startPos.valid == true) // if lowbat and  datetime and gps ok save datas and set ready to upload
+            {
+                end = d.End(gps.getTime(), 0, 0, diveMode);
+                sleep(LOW_BATT_SLEEP);
+            }
+            else if (validDive && vccSense && startPos.valid == true) // if usb connected datetime and gps ok , end dive only with timer
+            {
+                end = d.End(gps.getTime(), 0, 0, diveMode);
             }
             else
             {
                 d.deleteID(d.getID());
                 log_v("Dive not valid, record deleted");
+            }
+
+            if (end == "")
+            {
+                log_e("error ending the dive");
             }
         }
     }

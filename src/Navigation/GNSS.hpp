@@ -20,6 +20,7 @@ struct Position
     lat Lat;
     lng Lng;
     time_t dateTime;
+    bool valid;
 };
 
 class GNSS : public Navigation
