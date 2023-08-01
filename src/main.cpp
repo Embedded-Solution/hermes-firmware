@@ -24,7 +24,7 @@ void setup()
     Serial.begin(115200);
     delay(100);
 
-#if LOG_ON_SD_CARD == true
+#ifdef LOG_ON_SD_CARD
     if (SD.begin())
     {
         logFile = SD.open("/log.txt", FILE_APPEND);
