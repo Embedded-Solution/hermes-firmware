@@ -32,6 +32,12 @@ void Dive::init()
     staticOrder = 0;
 }
 
+void Dive::resetRecords()
+{
+    delete diveRecords;
+    diveRecords = new Record[siloRecordSize];
+}
+
 String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
 {
     init();
@@ -70,7 +76,7 @@ String Dive::End(long time, lat lat, lng lng, bool mode)
 
 int Dive::NewRecord(Record r)
 {
-    log_d("%d :\tTime=%ld\tTemp=%2.3f\t Depth=%2.3f", currentRecords, r.Time, r.Temp, r.Depth);
+    log_v("%d :\tTime=%ld\tTemp=%2.3f\t Depth=%2.3f", currentRecords, r.Time, r.Temp, r.Depth);
 
     diveRecords[currentRecords] = r;
     currentRecords++;
@@ -81,7 +87,7 @@ int Dive::NewRecord(Record r)
             log_e("error saving silo");
             return -1;
         }
-        diveRecords = new Record[siloRecordSize];
+        resetRecords();
         currentRecords = 0;
     }
     return 0;
@@ -102,7 +108,7 @@ int Dive::NewRecordStatic(Record r)
 
 int Dive::writeSilo(bool last, int currentRecord)
 {
-    log_d("CurrentRecord = %d", currentRecord);
+    log_d("CurrentRecord = %d\tSilo = %d", currentRecord, order);
     String path = "/" + ID + "/silo" + String(order) + ".json";
 
     DynamicJsonDocument jsonSilo(siloByteSize);
@@ -122,7 +128,7 @@ int Dive::writeSilo(bool last, int currentRecord)
 
     String buffer;
     serializeJson(jsonSilo, buffer);
-
+    log_v("Free heap = %ld", heap_caps_get_free_size(MALLOC_CAP_8BIT));
     return storage->writeFile(path, buffer);
 }
 

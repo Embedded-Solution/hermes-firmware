@@ -64,6 +64,7 @@ private:
     int order = 0;
 
     void init();
+    void resetRecords();
 
     int createIndex();
     int updateIndex(String updatedID);

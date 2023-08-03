@@ -71,7 +71,7 @@ void sleep(int mode)
         // if sd card error sleep without water detection
     case SDCARD_ERROR_SLEEP:
     case LOW_BATT_SLEEP:
-        log_i("SD CARD ERROR OR LOW BATT SLEEP");
+        log_d("SD CARD ERROR OR LOW BATT SLEEP");
         pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
         digitalWrite(GPIO_PROBE, LOW);
         gpio_hold_en(GPIO_NUM_33);
