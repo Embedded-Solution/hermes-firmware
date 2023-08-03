@@ -88,7 +88,7 @@ void wake()
                     {
                         log_d("Wake up gpio config");
 #ifdef MODE_DEBUG
-                    dynamicDive();
+                        dynamicDive();
 #else
                         selectMode();
 #endif
@@ -250,7 +250,7 @@ void dynamicDive()
                             count++;
                         else
                             count = 0;
-                        // log_i("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
+                        log_v("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
                     }
                     else
                     {
@@ -265,26 +265,30 @@ void dynamicDive()
                 }
             }
 
+            log_d("valid dive = %d\tvccsense = %d\t valid pos = %d\t lowbatt = %d", validDive, vccSense, startPos.valid, lowBat);
             String end;
             // if dive valid (Pmin reached) get end GPS, else delete records and clean index
-            if (validDive && !lowBat && !vccSense)
+            if (validDive == true && lowBat == false && vccSense == false)
             {
+                log_d("Normal end dive");
                 Position endPos = gps.parseEnd();
                 end = d.End(endPos.dateTime, endPos.Lat, endPos.Lng, diveMode);
             }
-            else if (validDive && lowBat && startPos.valid == true) // if lowbat and  datetime and gps ok save datas and set ready to upload
+            else if (validDive == true && lowBat == true && startPos.valid == true) // if lowbat and  datetime and gps ok save datas and set ready to upload
             {
                 end = d.End(gps.getTime(), 0, 0, diveMode);
+                log_d("end dive after low batt");
                 sleep(LOW_BATT_SLEEP);
             }
-            else if (validDive && vccSense && startPos.valid == true) // if usb connected datetime and gps ok , end dive only with timer
+            else if (validDive == true && vccSense == true && startPos.valid == true) // if usb connected datetime and gps ok , end dive only with timer
             {
+                log_d("end dive after VCC SENSE");
                 end = d.End(gps.getTime(), 0, 0, diveMode);
             }
             else
             {
+                log_d("Dive not valid, record deleted");
                 d.deleteID(d.getID());
-                log_v("Dive not valid, record deleted");
             }
 
             if (end == "")
