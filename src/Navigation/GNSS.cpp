@@ -147,7 +147,10 @@ Position GNSS::parseRecord(struct Record *records)
     log_d("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
     if (timeOK && gpsOK) //save if datetime and position is ok
+    {
         pos.valid = true;
+        log_d("POsition and dateTime valid");
+    }
 
     return pos;
 }
