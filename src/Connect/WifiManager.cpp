@@ -111,12 +111,12 @@ bool WifiManager::checkDeleteCredentials(void)
 
   if (exit == true) // if config button released before timer end, leave without delete credentials
   {
-    log_d("leave without deleting credentials");
+    log_d("Leave without deleting credentials");
     return false;
   }
   else // if config button still pressed, delete credentials and blink leds
   {
-    log_d("delete all credentials ");
+    log_d("Delete all credentials ");
     deleteAllCredentials();
 
     // blink leds

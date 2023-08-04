@@ -37,7 +37,6 @@ int uploadDives(SecureDigital sd)
         {
             continue;
         }
-        log_i("NEW DIVE TO UPLOAD");
 
         String path = "/" + ID + "/metadata.json";
         String metadata = sd.readFile(path);
@@ -45,7 +44,7 @@ int uploadDives(SecureDigital sd)
         // check if metadata already uploaded
         bddID = 0;
         bddID = checkId(metadata);
-        log_d("BDD ID = %d", bddID);
+        log_d("NEW DIVE TO UPLOAD, BDD ID = %d", bddID);
         /// /// Can be removed after beta tests //////
         if (bddID > 1000000000 || bddID < 0) // if bug in metadata bddid
         {
@@ -172,9 +171,7 @@ long postMetadata(String data)
 
         if (code != 200)
         {
-            Serial.print("HTTP Response code: ");
-            String payload = http.getString();
-            Serial.println(payload);
+            log_e("HTTP Response code: %s", http.getString().c_str());
             return -3;
         }
         else
@@ -220,7 +217,7 @@ int postRecordData(String data, unsigned long id)
         http.addHeader("Content-Type", "application/json");
         int code = http.POST(data.c_str());
         log_d("HTTP RETURN = %d", code);
-        // log_i("HTTP RETURN = %s", http.getString().c_str());
+        log_v("HTTP RETURN = %s", http.getString().c_str());
 
         // Disconnect
         http.end();
@@ -244,7 +241,7 @@ int ota(SecureDigital sd)
     WiFiClientSecure client;
     client.setInsecure();
     String updateURL;
-    log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
+    log_v("Adresse IP : %s", WiFi.localIP().toString().c_str());
 
     http.setAuthorization(user.c_str(), password.c_str());
 

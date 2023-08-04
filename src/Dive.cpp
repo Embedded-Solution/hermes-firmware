@@ -43,7 +43,7 @@ String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
     init();
     ID = createID(time);
     saveId(ID);
-
+    log_d("Start dynamic dive, ID = %s", ID.c_str());
     diveRecords = new Record[siloRecordSize];
     if (writeMetadataStart(time, lat, lng, freq, mode) == -1)
     {
@@ -59,6 +59,8 @@ String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
 
 String Dive::End(long time, lat lat, lng lng, bool mode)
 {
+    log_d("End dive, ID = %s", ID.c_str());
+
     //// Write battery level on SD Card only to debug offset  //////////
     String path = "/" + ID + "/battery.txt";
     storage->appendFile(path, (String)readBattery());
@@ -84,7 +86,7 @@ int Dive::NewRecord(Record r)
     {
         if (writeSilo() == -1)
         {
-            log_e("error saving silo");
+            log_e("Error saving silo");
             return -1;
         }
         resetRecords();
@@ -99,7 +101,7 @@ int Dive::NewRecordStatic(Record r)
 
     if (writeStaticRecord() == -1)
     {
-        log_e("error saving silo");
+        log_e("Error saving silo");
         return -1;
     }
 

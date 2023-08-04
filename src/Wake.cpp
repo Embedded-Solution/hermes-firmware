@@ -69,6 +69,7 @@ void wake()
                     }
                     else
                     {
+                        log_d("Dynamic dive");
                         dynamicDive();
                     }
                 }
@@ -83,10 +84,10 @@ void wake()
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
                 {
+                    log_d("Wake up gpio config");
                     log_d("Check delete credentials");
                     if (wm.checkDeleteCredentials() == false)
                     {
-                        log_d("Wake up gpio config");
 #ifdef MODE_DEBUG
                         dynamicDive();
 #else
@@ -120,8 +121,6 @@ void dynamicDive()
     if (detectSurface(BEGIN_SURFACE_DETECTION))
 #endif
     {
-        log_d("Dynamic dive 1");
-
         // set gpio probe pin as low output to avoid corrosion
         pinMode(GPIO_PROBE, OUTPUT);
         digitalWrite(GPIO_PROBE, LOW);
@@ -195,7 +194,7 @@ void dynamicDive()
 
                     temp = temperatureSensor.getTemp();
                     depth = depthSensor.getDepth();
-                    // log_i("Temp = %2.2f\t Depth = %3.3f\t Pressure = %4.4f", temp, depth, depthSensor.getPressure());
+                    log_v("Temp = %2.2f\t Depth = %3.3f\t Pressure = %4.4f", temp, depth, depthSensor.getPressure());
 
                     ///////////////// Detect end of dive ////////////////////
                     // if dive still not valid, check if depthMin reached
@@ -227,6 +226,7 @@ void dynamicDive()
                         {
                             lowBat = true;
                             endDive = true;
+                            log_d("LOW BATT DETECTED");
                         }
 
                         pinMode(GPIO_VCC_SENSE, INPUT);
@@ -277,12 +277,12 @@ void dynamicDive()
             else if (validDive == true && lowBat == true && startPos.valid == true) // if lowbat and  datetime and gps ok save datas and set ready to upload
             {
                 end = d.End(gps.getTime(), 0, 0, diveMode);
-                log_d("end dive after low batt");
+                log_d("End dive after low batt");
                 sleep(LOW_BATT_SLEEP);
             }
             else if (validDive == true && vccSense == true && startPos.valid == true) // if usb connected datetime and gps ok , end dive only with timer
             {
-                log_d("end dive after VCC SENSE");
+                log_d("End dive after VCC SENSE");
                 end = d.End(gps.getTime(), 0, 0, diveMode);
             }
             else
@@ -365,7 +365,7 @@ void staticDiveWakeUp()
         int value;
 
         value = analogRead(GPIO_WATER);
-        log_d("Value = %d", value);
+        log_v("Value = %d", value);
 
         if (value >= WATER_TRIGGER)
             staticCount = 0; // reset No water counter
@@ -445,7 +445,7 @@ bool detectSurface(float levelSurfaceDetection)
         {
             count++;
             depth = depthSensor.getDepth();
-            log_d("Depth = %f", depth);
+            log_v("Depth = %f", depth);
             if (depth < min)
                 min = depth;
             if (depth > max)

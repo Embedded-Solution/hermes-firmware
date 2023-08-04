@@ -36,7 +36,7 @@ ms5837::ms5837()
     if (crcCalculated != crcRead)
     {
         log_e("CRC does not match!!!");
-        log_d("Got %u but expected %u\n", crcCalculated, crcRead);
+        log_v("Got %u but expected %u\n", crcCalculated, crcRead);
     }
 }
 
