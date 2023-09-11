@@ -97,8 +97,6 @@ int uploadDives(SecureDigital sd)
                     siloID = checkId(records);
                     if (siloID == 0)
                     {
-                        // add bdd ID before upload
-                        records = updateId(records, bddID);
 
                         count = 0;
                         postOK = false;
@@ -115,6 +113,8 @@ int uploadDives(SecureDigital sd)
                                 log_i("Silo %d posted", i);
                                 // update silo with bdd ID on SD card
                                 sd.writeFile(path, records);
+                                // add bdd ID if silo posted
+                                records = updateId(records, bddID);
                             }
 
                             count++;

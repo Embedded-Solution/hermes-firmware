@@ -47,10 +47,10 @@ public:
 
     void saveId(String ID);
     void deleteID(String ID);
-    
-    void sendJson();
-        String getID();
 
+    void sendJson();
+    String getID();
+    int checkIndex();
 
 private:
     Storage *storage;
@@ -74,7 +74,7 @@ private:
 
     int writeMetadataEnd(long time, double lat, double lng);
     int writeMetadataStart(long time, double lat, double lng, int freq, bool mode);
-    int writeSilo(bool last=false, int currentRecord=0);
+    int writeSilo(bool last = false, int currentRecord = 0);
     int writeStaticRecord();
 };
 
