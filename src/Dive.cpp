@@ -354,7 +354,7 @@ int Dive::checkIndex()
             log_v("Dive %s already uploaded", ID.c_str());
             continue;
         }
-        log_d("Dive %s not uploaded", ID.c_str());
+        log_i("Dive %s not uploaded", ID.c_str());
 
         // check if there is data.
         if (storage->checkDirectory("/" + ID) != 0)
@@ -442,7 +442,7 @@ int Dive::checkIndex()
             if (validDive) // si l'un des 2 est valide, on permet l'upload
             {
                 updateIndex(ID);
-                log_d("Dive %s back to upload", ID.c_str());
+                log_i("Dive %s back to upload", ID.c_str());
             }
             else
             {
