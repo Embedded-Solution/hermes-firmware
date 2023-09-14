@@ -23,6 +23,11 @@
 /// @return 0 = success;-1 = sd card error;-2 = no index file
 int uploadDives(SecureDigital sd);
 
+/// @brief Upload silos not yet send to recordURL
+/// @param sd
+/// @return 0 = success;1 = at least one silo not posted
+int uploadSilos(SecureDigital sd, String ID, long bddID);
+
 /// @brief get firmware and install if newer
 /// @return
 int ota(SecureDigital sd);

@@ -10,8 +10,8 @@
 
 // Debug parameters
 //#define MODE_DEBUG
-//#define SERIAL1_DEBUG_OUTPUT 
-#define LOG_ON_SD_CARD 
+#define SERIAL1_DEBUG_OUTPUT 
+//#define LOG_ON_SD_CARD 
 #define LOG_LEVEL ESP_LOG_DEBUG
 
 

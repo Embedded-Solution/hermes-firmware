@@ -45,7 +45,7 @@ public:
         {
             log_v("UNKNOWN");
         }
-        
+
         log_v("SD Card Size: %lluMB\n", SD.cardSize() / (1024 * 1024));
         m_ready = true;
     };
@@ -58,6 +58,18 @@ public:
     int makeDirectory(String path)
     {
         if (SD.mkdir(path.c_str()))
+        {
+            return 0;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    int checkDirectory(String path)
+    {
+        if (SD.exists(path.c_str()))
         {
             return 0;
         }

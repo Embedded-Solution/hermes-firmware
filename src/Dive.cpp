@@ -324,6 +324,138 @@ int Dive::deleteIndex(String deletedID)
     }
 }
 
+int Dive::checkIndex()
+{
+    DynamicJsonDocument indexJson(27000);
+
+    String data;
+    data = storage->readFile(indexPath);
+    if (data == "")
+    {
+        log_e("Could not read index file to upload dives");
+        return -2;
+    }
+    deserializeJson(indexJson, data);
+    JsonObject root = indexJson.as<JsonObject>();
+
+    for (JsonObject::iterator it = root.begin(); it != root.end(); ++it)
+    {
+
+        String ID = it->key().c_str();
+        log_v("ID = %s", ID.c_str());
+
+        JsonObject dive = indexJson[ID].as<JsonObject>();
+        const int uploaded = dive["uploaded"];
+        log_v("Uploaded = %d", uploaded);
+
+        // if diveId can't be uploaded (-1), check if there is data and at least one valid GPS, datetime and min depth
+        if (uploaded != -1)
+        {
+            log_v("Dive %s already uploaded", ID.c_str());
+            continue;
+        }
+        log_i("Dive %s not uploaded", ID.c_str());
+
+        // check if there is data.
+        if (storage->checkDirectory("/" + ID) != 0)
+        {
+            log_e("Dive %s empty", ID.c_str());
+            continue;
+        }
+
+        // check if there is metadata start
+
+        StaticJsonDocument<1024> mdata;
+        String path = "/" + ID + "/metadata.json";
+
+        String metadata;
+        metadata = storage->readFile(path);
+
+        if (metadata == "")
+        {
+            log_e("Failed to read metadata");
+            continue;
+        }
+
+        deserializeJson(mdata, metadata);
+        bool validStart = false, validEnd = false, validDive = false;
+
+        long startTime = (long)mdata["startTime"];
+        double startLat = (double)mdata["startLat"];
+        double startLng = (double)mdata["startLng"];
+        long endTime = (long)mdata["endTime"];
+        double endLat = (double)mdata["endLat"];
+        double endLng = (double)mdata["endLng"];
+
+        // Check START gps and timestamp
+        if ((startTime > 1640991600 && startTime < 4163871600) && (startLat != 0 && startLng != 0))
+        {
+            validStart = true;
+            log_d("ValidStart ");
+        }
+        // Check au moins une position gps de bonne
+        if ((endTime > 1640991600 && endTime < 4163871600) && (endLat != 0 && endLng != 0))
+        {
+            validEnd = true;
+            log_d("ValidEnd ");
+        }
+
+        if (validStart || validEnd)
+        {
+            // vérifié si la plongée contient des silos
+            int siloNumber = 0;
+            path = "/" + ID + "/silo" + siloNumber + ".json";
+            String dataTxt = "";
+
+            while (storage->findFile(path) == 0 && !validDive)
+            {
+                dataTxt = storage->readFile(path);
+
+                if (dataTxt != "")
+                {
+                    DynamicJsonDocument dataJson(jsonSize);
+                    deserializeJson(dataJson, dataTxt);
+                    int i = 0;
+                    while (i < 100)
+                    {
+
+                        double value = (double)dataJson["records"][i][1];
+
+                        if (value > MIN_DEPTH_VALID_DIVE)
+                        {
+                            log_d("ValidDive ");
+                            validDive = true;
+                            break;
+                        }
+
+                        i++;
+                    }
+
+                    // verifier si la plongée à atteint la profondeur mini
+
+                    // si aucun des 2 n'est valide, on ne permet pas l'uplaod et on supprime la plongée définitivement (index file et datas )
+                }
+                siloNumber++;
+                path = "/" + ID + "/silo" + siloNumber + ".json";
+            }
+
+            if (validDive) // si l'un des 2 est valide, on permet l'upload
+            {
+                updateIndex(ID);
+                log_i("Dive %s back to upload", ID.c_str());
+            }
+            else
+            {
+                // TODO change index file with value -2 to not check second time (or delete from index file)
+            }
+        }
+        else
+        {
+            log_v("Dive %s, metadata not valid", ID.c_str());
+        }
+    }
+}
+
 void Dive::saveId(String ID)
 {
     ID.toCharArray(savedID, ID.length() + 1);

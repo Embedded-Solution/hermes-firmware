@@ -76,6 +76,11 @@ void wake()
                 else if (i == GPIO_VCC_SENSE) // wifi config
                 {
                     log_d("Wake up gpio vcc sense");
+                    Dive d(&sd);
+                    log_d("Start Check Index ");
+
+                    d.checkIndex();
+                    log_d("End Check Index ");
 
                     // While wifi not set, shutdown if usb is disconnected
                     attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
@@ -273,6 +278,12 @@ void dynamicDive()
                 log_d("Normal end dive");
                 Position endPos = gps.parseEnd();
                 end = d.End(endPos.dateTime, endPos.Lat, endPos.Lng, diveMode);
+
+                if (!startPos.valid && !endPos.valid)
+                {
+                    log_d("Dive valid but no valid pos, record deleted");
+                    d.deleteID(d.getID());
+                }
             }
             else if (validDive == true && lowBat == true && startPos.valid == true) // if lowbat and  datetime and gps ok save datas and set ready to upload
             {

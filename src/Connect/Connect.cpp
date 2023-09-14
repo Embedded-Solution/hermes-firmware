@@ -2,7 +2,7 @@
 
 int uploadDives(SecureDigital sd)
 {
-    long bddID = 0, siloID = 0;
+    long bddID = 0;
     bool error = false;
     int count = 0;
     bool postOK = false;
@@ -81,55 +81,14 @@ int uploadDives(SecureDigital sd)
         }
         else
         {
-            log_i("Metadata posted, start post records");
+            log_i("Metadata posted, start post silos");
 
-            int i = 0;
-            path = "/" + ID + "/silo0.json";
-            String records = "";
-
-            while (sd.findFile(path) == 0)
-            {
-                records = sd.readFile(path);
-
-                if (records != "")
-                {
-                    // check if silo already uploaded
-                    siloID = checkId(records);
-                    if (siloID == 0)
-                    {
-                        // add bdd ID before upload
-                        records = updateId(records, bddID);
-
-                        count = 0;
-                        postOK = false;
-                        while (postOK == false && count < POST_RETRY)
-                        {
-                            if (postRecordData(records, bddID) != 200) // post silos
-                            {
-                                error = true;
-                                log_e("Silo %d not posted", i);
-                            }
-                            else
-                            {
-                                postOK = true;
-                                log_i("Silo %d posted", i);
-                                // update silo with bdd ID on SD card
-                                sd.writeFile(path, records);
-                            }
-
-                            count++;
-                        }
-                    }
-                }
-                else
-                    log_i("Silo %d empty, skipped", i);
-
-                i++;
-                path = "/" + ID + "/silo" + i + ".json";
-            }
+            if (uploadSilos(sd, ID, bddID) == true)
+                error = true;
         }
         if (!error)
         {
+            count = 0;
             postOK = false;
             while (postOK == false && count < POST_RETRY)
             {
@@ -141,6 +100,10 @@ int uploadDives(SecureDigital sd)
                     serializeJson(indexJson, buffer);
                     sd.writeFile(indexPath, buffer);
                     log_i("Dive %d fully upload", bddID);
+                }
+                else
+                {
+                    count++;
                 }
             }
         }
@@ -217,7 +180,7 @@ int postRecordData(String data, unsigned long id)
         http.addHeader("Content-Type", "application/json");
         int code = http.POST(data.c_str());
         log_d("HTTP RETURN = %d", code);
-        log_v("HTTP RETURN = %s", http.getString().c_str());
+        // log_v("HTTP RETURN = %s", http.getString().c_str());
 
         // Disconnect
         http.end();
@@ -230,6 +193,58 @@ int postRecordData(String data, unsigned long id)
         return -1;
     }
     return -2;
+}
+
+int uploadSilos(SecureDigital sd, String ID, long bddID)
+{
+    long siloID = 0;
+    bool postOK = false, error = false;
+    int i = 0, count = 0;
+    String path = "/" + ID + "/silo0.json";
+    String records = "";
+
+    while (sd.findFile(path) == 0)
+    {
+        records = sd.readFile(path);
+
+        if (records != "")
+        {
+            // check if silo already uploaded
+            siloID = checkId(records);
+            if (siloID == 0)
+            {
+                // add bdd ID before upload
+                records = updateId(records, bddID);
+                log_i("Try to post Silo %d", i);
+
+                count = 0;
+                postOK = false;
+                while (postOK == false && count < POST_RETRY)
+                {
+                    if (postRecordData(records, bddID) != 200) // post silos
+                    {
+                        error = true;
+                        log_e("Silo %d not posted", i);
+                    }
+                    else
+                    {
+                        postOK = true;
+                        log_i("Silo %d posted", i);
+                        // update silo with bdd ID on SD card
+                        sd.writeFile(path, records);
+                    }
+
+                    count++;
+                }
+            }
+        }
+        else
+            log_i("Silo %d empty, skipped", i);
+
+        i++;
+        path = "/" + ID + "/silo" + i + ".json";
+    }
+    return error;
 }
 
 int ota(SecureDigital sd)

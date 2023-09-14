@@ -9,6 +9,7 @@ class Storage
 {
 public:
     virtual int makeDirectory(String path) = 0;
+    virtual int checkDirectory(String path) = 0;
     virtual int removeDirectory(String path) = 0;
 
     virtual String readFile(String path) = 0;
