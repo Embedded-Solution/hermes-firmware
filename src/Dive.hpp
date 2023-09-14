@@ -5,7 +5,8 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <AutoConnect.h>
-
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 #include <Storage/Storage.hpp>
 #include <Types.hpp>
 #include <Utils.hpp>
@@ -51,6 +52,7 @@ public:
     void sendJson();
     String getID();
     int checkIndex();
+    void saveUploadID(String ID, long bddID);
 
 private:
     Storage *storage;

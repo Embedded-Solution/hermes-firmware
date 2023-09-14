@@ -454,6 +454,7 @@ int Dive::checkIndex()
             log_v("Dive %s, metadata not valid", ID.c_str());
         }
     }
+    return 0;
 }
 
 void Dive::saveId(String ID)
@@ -493,6 +494,34 @@ String Dive::createID(long time)
     }
 
     return hash;
+}
+
+void Dive::saveUploadID(String ID, long bddID)
+{
+    // Define NTP Client to get time
+    WiFiUDP ntpUDP;
+    NTPClient timeClient(ntpUDP);
+    // Variables to save date and time
+    String timestamp;
+    log_d("saveUploadID");
+
+    while (!timeClient.update())
+    {
+        timeClient.forceUpdate();
+    }
+    // Get timestamp
+    timestamp = timeClient.getEpochTime();
+    log_d("Timestamp = %s ", timestamp.c_str());
+
+    String data = timestamp + ";" + bddID + ";" + ID + ";\n";
+
+    String path = "/uploadedDives.txt";
+    if (storage->findFile(path) == -1)
+        storage->writeFile(path, data);
+    else
+        storage->appendFile(path, data);
+
+    deleteIndex(ID);
 }
 
 void Dive::deleteID(String ID)

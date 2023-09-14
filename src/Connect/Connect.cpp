@@ -95,11 +95,15 @@ int uploadDives(SecureDigital sd)
                 if (putEndTransfer(bddID) == 200)
                 {
                     postOK = true;
+                    // TODO : if saveUploadID always working, writing bddID in indexFile not necessary
                     dive["uploaded"] = bddID;
                     String buffer;
                     serializeJson(indexJson, buffer);
                     sd.writeFile(indexPath, buffer);
                     log_i("Dive %d fully upload", bddID);
+
+                    Dive d(&sd);
+                    d.saveUploadID(ID, bddID);
                 }
                 else
                 {
