@@ -345,13 +345,16 @@ int Dive::checkIndex()
         log_v("ID = %s", ID.c_str());
 
         JsonObject dive = indexJson[ID].as<JsonObject>();
-        const int uploaded = dive["uploaded"];
+        const int bddID = dive["uploaded"];
         log_v("Uploaded = %d", uploaded);
 
         // if diveId can't be uploaded (-1), check if there is data and at least one valid GPS, datetime and min depth
-        if (uploaded != -1)
+        if (bddID != -1)
         {
             log_v("Dive %s already uploaded", ID.c_str());
+            // remove from index file if already uploaded
+            if (bddID > 0)
+                saveUploadID(ID, bddID);
             continue;
         }
         log_i("Dive %s not uploaded", ID.c_str());
