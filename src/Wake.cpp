@@ -59,8 +59,6 @@ void wake()
             {
                 if (i == GPIO_WATER) // Start dive
                 {
-                    log_d("Wake up gpio water");
-
                     if (diveMode == STATIC_MODE)
                     { // if Water wake up and static Mode
                         log_d("Static dive");
@@ -78,7 +76,6 @@ void wake()
                     log_d("Wake up gpio vcc sense");
                     Dive d(&sd);
                     log_d("Start Check Index ");
-
                     d.checkIndex();
                     log_d("End Check Index ");
 
@@ -89,8 +86,7 @@ void wake()
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
                 {
-                    log_d("Wake up gpio config");
-                    log_d("Check delete credentials");
+                    log_d("Wake up gpio config, check delete credentials");
                     if (wm.checkDeleteCredentials() == false)
                     {
 #ifdef MODE_DEBUG
@@ -436,8 +432,6 @@ void selectMode()
 
 bool detectSurface(float levelSurfaceDetection)
 {
-    log_d("START WATER DETECTION");
-
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
     digitalWrite(GPIO_SENSOR_POWER, LOW);
     delay(10);

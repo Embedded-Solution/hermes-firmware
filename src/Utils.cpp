@@ -44,7 +44,7 @@ void sleep(int mode)
     {
         // if other mode, wake up with water, config, or charging
     case DEFAULT_SLEEP:
-        log_i("DEFAULT SLEEP");
+        log_v("DEFAULT SLEEP");
         pinMode(GPIO_PROBE, INPUT); // Set GPIO PROBE back to input to allow water detection
 #ifndef MODE_DEBUG
         wakeMask = 1ULL << GPIO_WATER | 1ULL << GPIO_CONFIG | 1ULL << GPIO_VCC_SENSE;
@@ -57,7 +57,7 @@ void sleep(int mode)
 
         // if static diving, wake up with timer or config button
     case SLEEP_WITH_TIMER:
-        log_i("SLEEP WITH TIMER");
+        log_v("SLEEP WITH TIMER");
         pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
         digitalWrite(GPIO_PROBE, LOW);
         gpio_hold_en(GPIO_NUM_33);
@@ -71,7 +71,7 @@ void sleep(int mode)
         // if sd card error sleep without water detection
     case SDCARD_ERROR_SLEEP:
     case LOW_BATT_SLEEP:
-        log_d("SD CARD ERROR OR LOW BATT SLEEP");
+        log_v("SD CARD ERROR OR LOW BATT SLEEP");
         pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
         digitalWrite(GPIO_PROBE, LOW);
         gpio_hold_en(GPIO_NUM_33);

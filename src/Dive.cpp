@@ -110,7 +110,7 @@ int Dive::NewRecordStatic(Record r)
 
 int Dive::writeSilo(bool last, int currentRecord)
 {
-    log_d("CurrentRecord = %d\tSilo = %d", currentRecord, order);
+    log_v("CurrentRecord = %d\tSilo = %d", currentRecord, order);
     String path = "/" + ID + "/silo" + String(order) + ".json";
 
     DynamicJsonDocument jsonSilo(siloByteSize);
@@ -506,7 +506,6 @@ void Dive::saveUploadID(String ID, long bddID)
     NTPClient timeClient(ntpUDP);
     // Variables to save date and time
     String timestamp;
-    log_d("saveUploadID");
 
     while (!timeClient.update())
     {
@@ -514,8 +513,6 @@ void Dive::saveUploadID(String ID, long bddID)
     }
     // Get timestamp
     timestamp = timeClient.getEpochTime();
-    log_d("Timestamp = %s ", timestamp.c_str());
-
     String data = timestamp + ";" + bddID + ";" + ID + ";\n";
 
     String path = "/uploadedDives.txt";
