@@ -45,11 +45,17 @@ void WifiManager::startPortal(SecureDigital sd)
   // detach interrupt to keep remora alive during upload and ota process even if usb is disconnected
   detachInterrupt(GPIO_VCC_SENSE);
 
-  log_v("Wifi connected, start upload dives");
+  log_v("Wifi connected");
+
+  log_d("Start Check Index ");
+  Dive d(&sd);
+  d.checkIndex();
+  log_d("End Check Index ");
+  
+  log_v("Start upload dives");
 
   while (WiFi.status() == WL_CONNECTED && digitalRead(GPIO_VCC_SENSE))
   {
-
     if (millis() - previous > TIME_UPLOAD_OTA * 1000) // retry upload and ota after a while
     {
       pinMode(GPIO_LED2, OUTPUT);
