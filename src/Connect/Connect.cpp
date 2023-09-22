@@ -285,7 +285,7 @@ int ota(SecureDigital sd)
             if (version.toFloat() <= FIRMWARE_VERSION + 0.00001)
             {
                 http.end();
-                log_i("Will not update as I am version:%1.2f and you are offering version:%1.2f\n", version.toFloat(), FIRMWARE_VERSION);
+                log_i("Will not update as I am version:%1.2f and you are offering version:%1.2f\n", FIRMWARE_VERSION, version.toFloat());
                 return SUCCESS;
             }
             else
