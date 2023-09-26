@@ -5,8 +5,8 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <AutoConnect.h>
-#include <NTPClient.h>
-#include <WiFiUdp.h>
+// #include <NTPClient.h>
+// #include <WiFiUdp.h>
 #include <Storage/Storage.hpp>
 #include <Types.hpp>
 #include <Utils.hpp>

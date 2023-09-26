@@ -46,12 +46,7 @@ void WifiManager::startPortal(SecureDigital sd)
   detachInterrupt(GPIO_VCC_SENSE);
 
   log_v("Wifi connected");
-
-  log_d("Start Check Index ");
-  Dive d(&sd);
-  d.checkIndex();
-  log_d("End Check Index ");
-  
+ 
   log_v("Start upload dives");
 
   while (WiFi.status() == WL_CONNECTED && digitalRead(GPIO_VCC_SENSE))

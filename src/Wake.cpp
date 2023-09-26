@@ -75,6 +75,11 @@ void wake()
                 {
                     log_d("Wake up gpio vcc sense");
 
+                    log_d("Start Check Index ");
+                    Dive d(&sd);
+                    d.checkIndex();
+                    log_d("End Check Index ");
+                    
                     // While wifi not set, shutdown if usb is disconnected
                     attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
 

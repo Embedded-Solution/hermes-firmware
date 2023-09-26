@@ -363,6 +363,7 @@ int Dive::checkIndex()
         if (storage->checkDirectory("/" + ID) != 0)
         {
             log_e("Dive %s empty", ID.c_str());
+            deleteIndex(ID);
             continue;
         }
 
@@ -377,6 +378,7 @@ int Dive::checkIndex()
         if (metadata == "")
         {
             log_e("Failed to read metadata");
+            deleteIndex(ID);
             continue;
         }
 
@@ -450,11 +452,13 @@ int Dive::checkIndex()
             else
             {
                 // TODO change index file with value -2 to not check second time (or delete from index file)
+                deleteIndex(ID);
             }
         }
         else
         {
             log_v("Dive %s, metadata not valid", ID.c_str());
+            deleteIndex(ID);
         }
     }
     return 0;
@@ -501,25 +505,13 @@ String Dive::createID(long time)
 
 void Dive::saveUploadID(String ID, long bddID)
 {
-    // Define NTP Client to get time
-    WiFiUDP ntpUDP;
-    NTPClient timeClient(ntpUDP);
-    // Variables to save date and time
-    String timestamp;
-
-    while (!timeClient.update())
-    {
-        timeClient.forceUpdate();
-    }
-    // Get timestamp
-    timestamp = timeClient.getEpochTime();
-    String data = timestamp + ";" + bddID + ";" + ID + ";\n";
-
+    String dataSaved = "";
+    dataSaved = String(bddID) + ";" + ID + ";\n";
     String path = "/uploadedDives.txt";
     if (storage->findFile(path) == -1)
-        storage->writeFile(path, data);
+        storage->writeFile(path, dataSaved);
     else
-        storage->appendFile(path, data);
+        storage->appendFile(path, dataSaved);
 
     deleteIndex(ID);
 }
