@@ -11,7 +11,7 @@
 // Debug parameters
 //#define MODE_DEBUG
 //#define SERIAL1_DEBUG_OUTPUT 
-#define LOG_ON_SD_CARD 
+//#define LOG_ON_SD_CARD 
 #define LOG_LEVEL ESP_LOG_DEBUG
 
 
@@ -43,5 +43,11 @@
 // Upload parameters
 const String indexPath = "/index.json";
 #define POST_RETRY 3 // number of post attemp before skip.
+
+
+//Pressure sensor
+#define BAR100 true
+
+
 
 #endif

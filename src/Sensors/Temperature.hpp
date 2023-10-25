@@ -1,12 +1,11 @@
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H
 
-#include <Sensors/Sensor.hpp>
 #include <Types.hpp>
 
 using namespace std;
 
-class Temperature: public Sensor{
+class Temperature{
     public:
         virtual temperature getTemp() = 0;
 

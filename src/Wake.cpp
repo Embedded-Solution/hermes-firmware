@@ -19,6 +19,23 @@ void IRAM_ATTR ISR()
 
 void wake()
 {
+    pinMode(GPIO_SENSOR_POWER, OUTPUT);
+    digitalWrite(GPIO_SENSOR_POWER, LOW);
+
+    delay(10);
+    Wire.begin(I2C_SDA, I2C_SCL);
+    delay(10);
+    Depth depthSensor = Depth();
+
+    while (1)
+    {
+        log_i("Depth : %3.3f", depthSensor.getDepth());
+        log_i("Temp : %3.3f", depthSensor.getTemp());
+        log_i("Pressure  : %3.3f", depthSensor.getPressure());
+
+        delay(1000);
+    }
+
     // setup gpios
     log_i("firmware version:%1.2f\n", FIRMWARE_VERSION);
     sd.writeFile("/version.txt", String(FIRMWARE_VERSION));
@@ -42,67 +59,68 @@ void wake()
 
     // check wake up reason
     uint64_t wakeup_reason = esp_sleep_get_wakeup_cause();
-    if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
+    /*if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
     {
         log_d("Wake up timer static");
         gpio_hold_dis(GPIO_NUM_33);
         staticDiveWakeUp();
     }
     else
+    {*/
+    wakeup_reason = esp_sleep_get_ext1_wakeup_status();
+    uint64_t mask = 1;
+    int i = 0;
+    while (i < 64)
     {
-        wakeup_reason = esp_sleep_get_ext1_wakeup_status();
-        uint64_t mask = 1;
-        int i = 0;
-        while (i < 64)
+        if (wakeup_reason & mask)
         {
-            if (wakeup_reason & mask)
+            if (i == GPIO_WATER) // Start dive
             {
-                if (i == GPIO_WATER) // Start dive
-                {
-                    if (diveMode == STATIC_MODE)
-                    { // if Water wake up and static Mode
-                        log_d("Static dive");
-                        startStaticDive();
-                        sleep(SLEEP_WITH_TIMER);
-                    }
-                    else
-                    {
-                        log_d("Dynamic dive");
-                        dynamicDive();
-                    }
+                /*
+                if (diveMode == STATIC_MODE)
+                { // if Water wake up and static Mode
+                    log_d("Static dive");
+                    startStaticDive();
+                    sleep(SLEEP_WITH_TIMER);
                 }
-                else if (i == GPIO_VCC_SENSE) // wifi config
-                {
-                    log_d("Wake up gpio vcc sense");
+                else
+                {*/
+                log_d("Dynamic dive");
+                dynamicDive();
+                /*}*/
+            }
+            else if (i == GPIO_VCC_SENSE) // wifi config
+            {
+                log_d("Wake up gpio vcc sense");
 
-                    log_d("Start Check Index ");
-                    Dive d(&sd);
-                    d.checkIndex();
-                    log_d("End Check Index ");
-                    
-                    // While wifi not set, shutdown if usb is disconnected
-                    attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
+                log_d("Start Check Index ");
+                Dive d(&sd);
+                d.checkIndex();
+                log_d("End Check Index ");
 
-                    wm.startPortal(sd);
-                }
-                else if (i == GPIO_CONFIG) // button config (switch between diving modes)
+                // While wifi not set, shutdown if usb is disconnected
+                attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
+
+                wm.startPortal(sd);
+            }
+            else if (i == GPIO_CONFIG) // button config (switch between diving modes)
+            {
+                log_d("Wake up gpio config, check delete credentials");
+                if (wm.checkDeleteCredentials() == false)
                 {
-                    log_d("Wake up gpio config, check delete credentials");
-                    if (wm.checkDeleteCredentials() == false)
-                    {
 #ifdef MODE_DEBUG
-                        dynamicDive();
+                    dynamicDive();
 #else
-                        selectMode();
+                    // selectMode();
 #endif
-                    }
                 }
             }
-
-            i++;
-            mask = mask << 1;
         }
+
+        i++;
+        mask = mask << 1;
     }
+    /*}*/
 }
 
 void dynamicDive()
@@ -140,7 +158,7 @@ void dynamicDive()
         sd = SecureDigital();
         Dive d(&sd);
         tsys01 temperatureSensor = tsys01();
-        ms5837 depthSensor = ms5837();
+        Depth depthSensor = Depth();
 
         RunningAverage depthRAvg(30);
 
@@ -196,7 +214,6 @@ void dynamicDive()
 
                     temp = temperatureSensor.getTemp();
                     depth = depthSensor.getDepth();
-                    log_v("Temp = %2.2f\t Depth = %3.3f\t Pressure = %4.4f", temp, depth, depthSensor.getPressure());
 
                     ///////////////// Detect end of dive ////////////////////
                     // if dive still not valid, check if depthMin reached
@@ -311,6 +328,74 @@ void dynamicDive()
     }
 }
 
+bool detectSurface(float levelSurfaceDetection)
+{
+    pinMode(GPIO_SENSOR_POWER, OUTPUT);
+    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    delay(10);
+    Wire.begin(I2C_SDA, I2C_SCL);
+    delay(10);
+
+    Depth depthSensor = Depth();
+    double depth = 0, min = 999, max = -999;
+    int count = 0, avgCount = 0;
+    double avg = 0;
+    unsigned long start = millis();
+    while (millis() - start <= TIME_SURFACE_DETECTION * 1000)
+    {
+
+        while (count < 10)
+        {
+            count++;
+            depth = depthSensor.getDepth();
+            log_v("Depth = %f", depth);
+            if (depth < min)
+                min = depth;
+            if (depth > max)
+                max = depth;
+            delay(50);
+        }
+        avg += max - min;
+        max = -999;
+        min = 999;
+        avgCount++;
+        count = 0;
+    }
+
+    if (avg / (float)avgCount > levelSurfaceDetection)
+        return 1;
+    else
+        return 0;
+}
+
+/*
+void selectMode()
+{
+    diveMode = !diveMode;
+
+    if (diveMode == STATIC_MODE)
+    {
+        log_v("Static Diving");
+
+        digitalWrite(GPIO_LED4, HIGH);
+        delay(3000);
+        digitalWrite(GPIO_LED4, LOW);
+    }
+    else
+    {
+        log_v("Dynamic diving");
+
+        for (int i = 0; i < 10; i++)
+        {
+            digitalWrite(GPIO_LED4, HIGH);
+            delay(150);
+            digitalWrite(GPIO_LED4, LOW);
+            delay(150);
+        }
+    }
+}
+
+
 void startStaticDive()
 {
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
@@ -404,69 +489,4 @@ void staticDiveWakeUp()
         sleep(DEFAULT_SLEEP); // sleep without timer waiting for other dive or config button
     }
 }
-
-void selectMode()
-{
-    diveMode = !diveMode;
-
-    if (diveMode == STATIC_MODE)
-    {
-        log_v("Static Diving");
-
-        digitalWrite(GPIO_LED4, HIGH);
-        delay(3000);
-        digitalWrite(GPIO_LED4, LOW);
-    }
-    else
-    {
-        log_v("Dynamic diving");
-
-        for (int i = 0; i < 10; i++)
-        {
-            digitalWrite(GPIO_LED4, HIGH);
-            delay(150);
-            digitalWrite(GPIO_LED4, LOW);
-            delay(150);
-        }
-    }
-}
-
-bool detectSurface(float levelSurfaceDetection)
-{
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
-    delay(10);
-    Wire.begin(I2C_SDA, I2C_SCL);
-    delay(10);
-
-    ms5837 depthSensor = ms5837();
-    double depth = 0, min = 999, max = -999;
-    int count = 0, avgCount = 0;
-    double avg = 0;
-    unsigned long start = millis();
-    while (millis() - start <= TIME_SURFACE_DETECTION * 1000)
-    {
-
-        while (count < 10)
-        {
-            count++;
-            depth = depthSensor.getDepth();
-            log_v("Depth = %f", depth);
-            if (depth < min)
-                min = depth;
-            if (depth > max)
-                max = depth;
-            delay(50);
-        }
-        avg += max - min;
-        max = -999;
-        min = 999;
-        avgCount++;
-        count = 0;
-    }
-
-    if (avg / (float)avgCount > levelSurfaceDetection)
-        return 1;
-    else
-        return 0;
-}
+*/

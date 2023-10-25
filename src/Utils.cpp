@@ -56,7 +56,7 @@ void sleep(int mode)
         break;
 
         // if static diving, wake up with timer or config button
-    case SLEEP_WITH_TIMER:
+   /* case SLEEP_WITH_TIMER:
         log_v("SLEEP WITH TIMER");
         pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
         digitalWrite(GPIO_PROBE, LOW);
@@ -67,7 +67,7 @@ void sleep(int mode)
         esp_sleep_enable_ext1_wakeup(wakeMask, ESP_EXT1_WAKEUP_ANY_HIGH);
         esp_sleep_enable_timer_wakeup((TIME_TO_SLEEP_STATIC * 1000 - OFFSET_SLEEP_STATIC) * 1000);
         break;
-
+*/
         // if sd card error sleep without water detection
     case SDCARD_ERROR_SLEEP:
     case LOW_BATT_SLEEP:

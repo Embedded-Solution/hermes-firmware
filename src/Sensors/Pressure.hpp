@@ -1,14 +1,17 @@
-#ifndef PRESSURE_H
-#define PRESSURE_H
+#ifndef PRESSURE_HPP
+#define PRESSURE_HPP
 
-#include <Sensors/Sensor.hpp>
 #include <Types.hpp>
 
 using namespace std;
 
-class Pressure : public Sensor{
-    public:
-        virtual pressure getPressure() = 0;
+class Pressure
+{
+public:
+    virtual pressure getPressure() = 0;
+    virtual depth getDepth() = 0;
+
+private:
 };
 
 #endif

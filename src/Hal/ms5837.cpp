@@ -5,8 +5,13 @@
 
 #include <hal/MS5837.hpp>
 #include <Types.hpp>
+#include "MS5837.hpp"
 
 ms5837::ms5837()
+{
+}
+
+void ms5837::init()
 {
     // Reset the MS5837, per datasheet
     Wire.beginTransmission(_addr);
@@ -27,7 +32,6 @@ ms5837::ms5837()
         _msCalibrationValue[i] = (Wire.read() << 8) | Wire.read();
 
         log_v("calibration value %d: %d\n", i, _msCalibrationValue[i]);
-
     }
 
     // Verify that data is correct with CRC
@@ -37,9 +41,18 @@ ms5837::ms5837()
     {
         log_e("CRC does not match!!!");
         log_v("Got %u but expected %u\n", crcCalculated, crcRead);
+        initialised = false;
+    }
+    else
+    {
+        initialised = true;
     }
 }
 
+bool ms5837::isInitialised()
+{
+    return initialised;
+}
 uint8_t ms5837::crc4(uint16_t check_code[])
 {
     uint16_t n_rem = 0;
@@ -113,7 +126,6 @@ void ms5837::readValues()
     _rawTemp = (_rawTemp << 8) | Wire.read();
 
     log_v("rawTemp: %u rawPressure: %u\n", _rawTemp, _rawPres);
-
 }
 
 void ms5837::computeTemp()

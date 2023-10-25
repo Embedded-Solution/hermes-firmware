@@ -76,7 +76,7 @@ Position GNSS::parseRecord(struct Record *records)
     delay(10);
 
     tsys01 temperatureSensor = tsys01();
-    ms5837 depthSensor = ms5837();
+    Depth depthSensor = Depth();
     double temp = temperatureSensor.getTemp();
     double depth = depthSensor.getDepth();
 
@@ -146,7 +146,7 @@ Position GNSS::parseRecord(struct Record *records)
     pos.dateTime = now() - idRecord * TIME_GPS_RECORDS; // start datetime is the before the gps search so we remove the duration of the gps search.
     log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
-    if (timeOK && gpsOK) //save if datetime and position is ok
+    if (timeOK && gpsOK) // save if datetime and position is ok
     {
         pos.valid = true;
         log_d("POsition and dateTime valid");

@@ -21,8 +21,8 @@
 
 void wake();
 void dynamicDive();
-void startStaticDive();
-void staticDiveWakeUp();
+//void startStaticDive();
+//void staticDiveWakeUp();
 void selectMode();
 bool detectSurface(float levelSurfaceDetection);
 
