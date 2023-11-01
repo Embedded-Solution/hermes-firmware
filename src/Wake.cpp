@@ -25,7 +25,7 @@ void wake()
     setModemSleep();
 
     // setup gpios
-    log_i("firmware version:%1.2f\n", FIRMWARE_VERSION);
+    log_i("firmware version:%s\n", FIRMWARE_VERSION);
     sd.writeFile("/version.txt", String(FIRMWARE_VERSION));
 
     pinMode(GPIO_LED1, OUTPUT);
