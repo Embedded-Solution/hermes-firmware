@@ -70,7 +70,7 @@ void RunningAverage::addValue(float f)
     else
     {
         _min = std::numeric_limits<float>::max();
-        _max = std::numeric_limits<float>::min();
+        _max = -std::numeric_limits<float>::max();
         for (int i = 0; i < _cnt; i++)
         {
             if (_ar[i] < _min)

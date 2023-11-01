@@ -36,6 +36,8 @@ public:
     float getElement(uint8_t idx);
     uint8_t getSize() { return _size; }
     uint8_t getCount() { return _cnt; }
+    float getMin() { return _min; }
+    float getMax() { return _max; }
 
 protected:
     uint8_t _size;
@@ -45,7 +47,6 @@ protected:
     float *_ar;
     float _min;
     float _max;
-
 };
 
 #endif
