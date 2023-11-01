@@ -6,12 +6,11 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION 3.9
-
+#define FIRMWARE_VERSION "3.9"
 // Debug parameters
-//#define MODE_DEBUG
-//#define SERIAL1_DEBUG_OUTPUT 
-#define LOG_ON_SD_CARD 
+// #define MODE_DEBUG
+// #define SERIAL1_DEBUG_OUTPUT
+#define LOG_ON_SD_CARD
 #define LOG_LEVEL ESP_LOG_DEBUG
 
 
@@ -38,8 +37,8 @@
 #define TIME_CHECK_POWER 60              // Time between 2 battery ccheck during dynamic dive. (seconds)
 #define MIN_DEPTH_CHECK_AMPLITUDE 2.0    // min depth to check amplitude of depth before ending dive. (meter)
 #define ENDING_DIVE_DEPTH_AMPLITUDE 0.15 // min depth amplitude to end dive, if depth amplitude below val, diver is out of water.
-#define TIMER_DEL_CREDENTIALS 10         // Time to press config button to delete all credentials 
- 
+#define TIMER_DEL_CREDENTIALS 10         // Time to press config button to delete all credentials
+
 // Upload parameters
 const String indexPath = "/index.json";
 #define POST_RETRY 3 // number of post attemp before skip.
