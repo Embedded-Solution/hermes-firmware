@@ -19,6 +19,10 @@ void IRAM_ATTR ISR()
 
 void wake()
 {
+    //Disable WIFI during wake up
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    
     // setup gpios
     log_i("firmware version:%1.2f\n", FIRMWARE_VERSION);
     sd.writeFile("/version.txt", String(FIRMWARE_VERSION));
