@@ -475,6 +475,8 @@ String Dive::getID()
 
 String Dive::createID(long time)
 {
+    wakeModemSleep();
+
     byte shaResult[32];
     WiFi.mode(WIFI_MODE_STA);
     String unhashed_id = String(time) + WiFi.macAddress() + String(esp_random());
@@ -499,8 +501,7 @@ String Dive::createID(long time)
         hash = hash + str;
     }
 
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
+    setModemSleep();
     return hash;
 }
 

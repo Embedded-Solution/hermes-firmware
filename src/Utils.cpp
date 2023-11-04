@@ -2,6 +2,8 @@
 
 String remoraID()
 {
+    wakeModemSleep();
+
     byte shaResult[32];
     WiFi.mode(WIFI_MODE_STA);
     String unhashed_id = WiFi.macAddress();
@@ -25,7 +27,9 @@ String remoraID()
         sprintf(str, "%02x", (int)shaResult[i]);
         hash = hash + str;
     }
+    setModemSleep();
 
+    log_v("remoraID = %s", hash.c_str());
     return hash;
 }
 
@@ -139,4 +143,25 @@ void TaskLedBatteryCode(void *parameter)
             digitalWrite(GPIO_LED4, LOW);
         }
     }
+}
+
+void setModemSleep(void)
+{
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+
+    WiFi.setSleep(true);
+    if (!setCpuFrequencyMhz(40))
+    {
+        Serial2.println("Not valid frequency!");
+    }
+
+    // Use this if 40Mhz is not supported
+    // setCpuFrequencyMhz(80);
+}
+
+void wakeModemSleep(void)
+{
+    setCpuFrequencyMhz(240);
+    delay(1);
 }

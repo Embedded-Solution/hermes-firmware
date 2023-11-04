@@ -2,6 +2,8 @@
 
 void WifiManager::startPortal(SecureDigital sd)
 {
+  wakeModemSleep();
+
   WebServer Server;
   AutoConnect Portal(Server);
 
@@ -65,10 +67,6 @@ void WifiManager::startPortal(SecureDigital sd)
 
       digitalWrite(GPIO_LED2, LOW);
       log_v("OTA finished, waiting for usb disconnection");
-
-      // Disable wifi while waiting for usb disconnection (optimize charging)
-      WiFi.disconnect(true);
-      WiFi.mode(WIFI_OFF);
 
       previous = millis(); // reset upload and ota retry timer
     }

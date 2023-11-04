@@ -11,5 +11,7 @@ String remoraID();
 void sleep(int mode = 0);
 float readBattery();
 void TaskLedBatteryCode(void *parameter);
+void setModemSleep(void);
+void wakeModemSleep(void);
 
 #endif
