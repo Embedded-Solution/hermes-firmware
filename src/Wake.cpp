@@ -79,7 +79,7 @@ void wake()
                     Dive d(&sd);
                     d.checkIndex();
                     log_d("End Check Index ");
-                    
+
                     // While wifi not set, shutdown if usb is disconnected
                     attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
 
@@ -297,6 +297,9 @@ void dynamicDive()
             {
                 log_d("Dive not valid, record deleted");
                 d.deleteID(d.getID());
+
+                if (lowBat == true) // if dive not valid AND lowBatt, low batt sleep
+                    sleep(LOW_BATT_SLEEP);
             }
 
             if (end == "")
