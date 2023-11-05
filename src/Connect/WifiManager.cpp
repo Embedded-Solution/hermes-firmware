@@ -2,6 +2,9 @@
 
 void WifiManager::startPortal(SecureDigital sd)
 {
+  TaskHandle_t TaskLedBattery;
+  xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
+
   wakeModemSleep();
 
   WebServer Server;
@@ -21,58 +24,57 @@ void WifiManager::startPortal(SecureDigital sd)
   acConfig.tickerPort = GPIO_LED3;
   acConfig.tickerOn = LOW;
   acConfig.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_OPENSSIDS | AC_MENUITEM_DELETESSID;
-
-  Portal.config(acConfig);
-
-  Portal.load(page);
-
-  SPIFFS.end();
-
-  Portal.begin();
-  if (MDNS.begin("remora"))
-  {
-    MDNS.addService("http", "tcp", 80);
-  }
   long previous = -1000000000;
 
-  TaskHandle_t TaskLedBattery;
-  xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
-
-  while (WiFi.status() == WL_DISCONNECTED)
-  {
-    Portal.handleClient();
-  }
-  log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
-
-  // detach interrupt to keep remora alive during upload and ota process even if usb is disconnected
-  detachInterrupt(GPIO_VCC_SENSE);
-
-  log_v("Wifi connected");
-
-  log_v("Start upload dives");
-
-  while (WiFi.status() == WL_CONNECTED && digitalRead(GPIO_VCC_SENSE))
+  while (digitalRead(GPIO_VCC_SENSE))
   {
     if (millis() - previous > TIME_UPLOAD_OTA * 1000) // retry upload and ota after a while
     {
-      pinMode(GPIO_LED2, OUTPUT);
-      digitalWrite(GPIO_LED2, HIGH);
+      wakeModemSleep();
 
-      if (uploadDives(sd) != SUCCESS)
-        log_e("Error after upload");
+      Portal.config(acConfig);
+      Portal.load(page);
+      SPIFFS.end();
+      Portal.begin();
+      if (MDNS.begin("remora"))
+      {
+        MDNS.addService("http", "tcp", 80);
+      }
 
-      log_v("Upload finished, start OTA");
-      if (ota(sd) != SUCCESS)
-        log_e("Error after OTA");
+      while (WiFi.status() == WL_DISCONNECTED)
+      {
+        Portal.handleClient();
+      }
 
-      digitalWrite(GPIO_LED2, LOW);
-      log_v("OTA finished, waiting for usb disconnection");
+      log_i("Adresse IP : %s", WiFi.localIP().toString().c_str());
 
-      previous = millis(); // reset upload and ota retry timer
+      // detach interrupt to keep remora alive during upload and ota process even if usb is disconnected
+      detachInterrupt(GPIO_VCC_SENSE);
+
+      log_v("Wifi connected, Start upload dives");
+
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        pinMode(GPIO_LED2, OUTPUT);
+        digitalWrite(GPIO_LED2, HIGH);
+
+        if (uploadDives(sd) != SUCCESS)
+          log_e("Error after upload");
+
+        log_v("Upload finished, start OTA");
+        if (ota(sd) != SUCCESS)
+          log_e("Error after OTA");
+
+        digitalWrite(GPIO_LED2, LOW);
+        log_v("OTA finished, waiting for usb disconnection");
+
+        Portal.end();
+        setModemSleep();
+
+        previous = millis(); // reset upload and ota retry timer
+      }
     }
-    Portal.handleClient();
   }
-
   log_v("USB disconnected, go back to sleep");
   sleep(DEFAULT_SLEEP);
 }
