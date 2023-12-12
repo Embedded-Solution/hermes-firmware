@@ -24,19 +24,19 @@ class ms5837: public Pressure, public Depth, public Temperature
     const short _d1_8192 = 0x4A;
     const short _d2_8192 = 0x5A;
 
-    uint32_t _rawTemp;
-    uint32_t _rawPres;
+    uint64_t _rawTemp;
+    uint64_t _rawPres;
 
-    int32_t _deltaTemp;
-    int32_t _temp;
-    int32_t _pressure;
+    int64_t _deltaTemp;
+    int64_t _temp;
+    int64_t _pressure;
 
-    const int _fluidDensity = 1029;
-    uint16_t _msCalibrationValue[8];
+    const int64_t _fluidDensity = 1029;
+    uint64_t _msCalibrationValue[8];
 
-    const float _pa = 100.0f;
+    const double _pa = 100.0f;
 
-    uint8_t crc4(uint16_t[]);
+    uint8_t crc4(uint64_t[]);
     void readValues();
     void computeTemp();
     void computePressure();
