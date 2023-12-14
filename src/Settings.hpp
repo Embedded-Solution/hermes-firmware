@@ -11,7 +11,7 @@
 // #define MODE_DEBUG
 // #define SERIAL1_DEBUG_OUTPUT
 #define LOG_ON_SD_CARD
-#define LOG_LEVEL ESP_LOG_INFO
+#define LOG_LEVEL ESP_LOG_DEBUG
 
 
 // Dives parameters
