@@ -6,12 +6,12 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION "3.9"
+#define FIRMWARE_VERSION "3.91"
 // Debug parameters
 // #define MODE_DEBUG
 // #define SERIAL1_DEBUG_OUTPUT
 #define LOG_ON_SD_CARD
-#define LOG_LEVEL ESP_LOG_DEBUG
+#define LOG_LEVEL ESP_LOG_INFO
 
 
 // Dives parameters
