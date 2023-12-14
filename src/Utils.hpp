@@ -12,8 +12,6 @@ void sleep(int mode = 0);
 float readBattery();
 void TaskLedBatteryCode(void *parameter);
 int versionCompare(string v1, string v2);
-void setModemSleep(void);
-void wakeModemSleep(void);
 
 
 #endif

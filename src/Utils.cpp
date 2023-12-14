@@ -186,24 +186,3 @@ int versionCompare(string v1, string v2)
     } 
     return 0; 
 }
-
-void setModemSleep(void)
-{
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
-
-    WiFi.setSleep(true);
-    if (!setCpuFrequencyMhz(40))
-    {
-        Serial2.println("Not valid frequency!");
-    }
-
-    // Use this if 40Mhz is not supported
-    // setCpuFrequencyMhz(80);
-}
-
-void wakeModemSleep(void)
-{
-    setCpuFrequencyMhz(240);
-    delay(1);
-}
