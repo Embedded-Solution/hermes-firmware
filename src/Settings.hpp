@@ -8,11 +8,14 @@
 
 #define FIRMWARE_VERSION "3.91"
 // Debug parameters
+#ifdef TAG
+#undef TAG
+#define TAG (char *)"REMORA"
+#endif
 // #define MODE_DEBUG
 // #define SERIAL1_DEBUG_OUTPUT
-#define LOG_ON_SD_CARD
+// #define LOG_ON_SD_CARD
 #define LOG_LEVEL ESP_LOG_DEBUG
-
 
 // Dives parameters
 #define OFFSET_SLEEP_STATIC 1700         /*Offset going to sleep and wake up static mode*/
