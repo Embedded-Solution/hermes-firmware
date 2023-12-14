@@ -199,7 +199,7 @@ int Dive::writeMetadataStart(long time, double lat, double lng, int freq, bool m
     mdata["deviceId"] = remoraID();
     mdata["diveId"] = ID;
     char buf[50];
-    sprintf(buf, "%s - %1.2f", (mode == 1 ? "Static" : "Dynamic"), FIRMWARE_VERSION);
+    sprintf(buf, "%s - %s", (mode == 1 ? "Static" : "Dynamic"), FIRMWARE_VERSION);
     mdata["mode"] = buf;
     mdata["startTime"] = time;
     mdata["startLat"] = lat;
@@ -346,7 +346,6 @@ int Dive::checkIndex()
 
         JsonObject dive = indexJson[ID].as<JsonObject>();
         const int bddID = dive["uploaded"];
-        log_v("Uploaded = %d", uploaded);
 
         // if diveId can't be uploaded (-1), check if there is data and at least one valid GPS, datetime and min depth
         if (bddID != -1)
@@ -476,6 +475,8 @@ String Dive::getID()
 
 String Dive::createID(long time)
 {
+    wakeModemSleep();
+
     byte shaResult[32];
     WiFi.mode(WIFI_MODE_STA);
     String unhashed_id = String(time) + WiFi.macAddress() + String(esp_random());
@@ -500,6 +501,7 @@ String Dive::createID(long time)
         hash = hash + str;
     }
 
+    setModemSleep();
     return hash;
 }
 

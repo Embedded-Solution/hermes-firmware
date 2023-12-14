@@ -279,17 +279,12 @@ int ota(SecureDigital sd)
             log_d("Name = %s", version.c_str());
 
             version.remove(0, 10);
+            log_i("OTA firmware = %s\tOld firmware = %s", version.c_str(), FIRMWARE_VERSION);
 
-            log_i("Firmware = %1.2f", version.toFloat());
+            if (versionCompare(version.c_str(), FIRMWARE_VERSION) > 0)
+            {
+                log_d("Old firmware version smaller, start Update");
 
-            if (version.toFloat() <= FIRMWARE_VERSION + 0.00001)
-            {
-                http.end();
-                log_i("Will not update as I am version:%1.2f and you are offering version:%1.2f\n", FIRMWARE_VERSION, version.toFloat());
-                return SUCCESS;
-            }
-            else
-            {
                 // Start update
                 size_t written = 0;
                 size_t gotten = 1;
@@ -345,6 +340,12 @@ int ota(SecureDigital sd)
                 {
                     log_e("Error Occurred. Error #: %d", Update.getError());
                 }
+            }
+            else
+            {
+                http.end();
+                log_i("Will not update as I am version:%s and you are offering version:%s\n", FIRMWARE_VERSION, version.c_str());
+                return SUCCESS;
             }
         }
         else

@@ -24,14 +24,14 @@ ms5837::ms5837()
         Wire.endTransmission();
 
         Wire.requestFrom(_addr, 2);
-        _msCalibrationValue[i] = (Wire.read() << 8) | Wire.read();
+        _msCalibrationValue[i] =(uint64_t)( ((((uint64_t)Wire.read()) << 8) | (uint64_t)Wire.read()));
 
-        log_v("calibration value %d: %d\n", i, _msCalibrationValue[i]);
+        log_v("calibration value %i: %lli\n", i, _msCalibrationValue[i]);
 
     }
 
     // Verify that data is correct with CRC
-    uint8_t crcRead = _msCalibrationValue[0] >> 12;
+    uint8_t crcRead = (uint8_t)(_msCalibrationValue[0] >> 12);
     uint8_t crcCalculated = crc4(_msCalibrationValue);
     if (crcCalculated != crcRead)
     {
@@ -40,7 +40,7 @@ ms5837::ms5837()
     }
 }
 
-uint8_t ms5837::crc4(uint16_t check_code[])
+uint8_t ms5837::crc4(uint64_t check_code[])
 {
     uint16_t n_rem = 0;
 
@@ -77,7 +77,7 @@ uint8_t ms5837::crc4(uint16_t check_code[])
 
 void ms5837::readValues()
 {
-    // Request Raw Pressure conversion
+        // Request Raw Pressure conversion
     Wire.beginTransmission(_addr);
     Wire.write(_d1_8192);
     Wire.endTransmission();
@@ -112,7 +112,7 @@ void ms5837::readValues()
     _rawTemp = (_rawTemp << 8) | Wire.read();
     _rawTemp = (_rawTemp << 8) | Wire.read();
 
-    log_v("rawTemp: %u rawPressure: %u\n", _rawTemp, _rawPres);
+    log_v("rawTemp: %lli rawPressure: %lli\n", _rawTemp, _rawPres);
 
 }
 
@@ -120,33 +120,33 @@ void ms5837::computeTemp()
 {
     readValues();
 
-    _deltaTemp = _rawTemp - _msCalibrationValue[5] * pow(2, 8);
-    _temp = (2000 + _deltaTemp * _msCalibrationValue[6] / pow(2, 23));
+    _deltaTemp = _rawTemp - (_msCalibrationValue[5] <<8);
+    _temp = (2000 + ((int64_t)(_deltaTemp * _msCalibrationValue[6])>>23));
 }
 
 void ms5837::computePressure()
 {
     computeTemp();
 
-    int64_t offset = _msCalibrationValue[2] * pow(2, 16) + (_msCalibrationValue[4] * _deltaTemp) / pow(2, 7);
-    int64_t sensitivity = _msCalibrationValue[1] * pow(2, 15) + (_msCalibrationValue[3] * _deltaTemp) / pow(2, 8);
-    _pressure = ((_rawPres * sensitivity / pow(2, 21) - offset) / pow(2, 13)) / 10;
+    int64_t offset = (_msCalibrationValue[2]<<16) + ((int64_t)(_msCalibrationValue[4] * _deltaTemp)>>7);
+    int64_t sensitivity = (_msCalibrationValue[1] << 15) + ((int64_t)(_msCalibrationValue[3] * _deltaTemp) >>8);
+    _pressure = ((int64_t)(((_rawPres * ((int64_t)sensitivity>>21)) - offset) >>13) )/ 10;
 }
 
 pressure ms5837::getPressure()
 {
     computePressure();
-    return _pressure;
+    return (double)_pressure;
 }
 
 temperature ms5837::getTemp()
 {
     computeTemp();
-    return _temp / 100.0;
+    return ((double)_temp) / 100.0;
 }
 
 depth ms5837::getDepth()
 {
     computePressure();
-    return ((_pressure * _pa) - 101300) / (_fluidDensity * 9.80665f);
+    return ((((double)_pressure) * _pa) - 101300) / (((double)_fluidDensity) * ((double)9.80665f));
 }
