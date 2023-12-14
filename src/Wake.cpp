@@ -1,5 +1,4 @@
 #include <Wake.hpp>
-#include <Utils.hpp>
 
 using namespace std;
 SecureDigital sd;

@@ -2,8 +2,6 @@
 
 String remoraID()
 {
-    wakeModemSleep();
-
     byte shaResult[32];
     WiFi.mode(WIFI_MODE_STA);
     String unhashed_id = WiFi.macAddress();
@@ -27,9 +25,7 @@ String remoraID()
         sprintf(str, "%02x", (int)shaResult[i]);
         hash = hash + str;
     }
-    setModemSleep();
 
-    log_v("remoraID = %s", hash.c_str());
     return hash;
 }
 
