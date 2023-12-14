@@ -20,10 +20,6 @@ void IRAM_ATTR ISR()
 
 void wake()
 {
-
-    // Disable WIFI during wake up
-    setModemSleep();
-
     // setup gpios
     log_i("firmware version:%s\n", FIRMWARE_VERSION);
     sd.writeFile("/version.txt", String(FIRMWARE_VERSION));

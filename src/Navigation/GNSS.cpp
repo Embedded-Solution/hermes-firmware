@@ -195,7 +195,7 @@ Position GNSS::parseEnd(void)
             }
             if (gps.location.isValid())
             {
-                log_d("Position: %f , %f", getLat(), getLng());
+                log_v("Position: %f , %f", getLat(), getLng());
                 gpsOK = true;
                 pos.Lat = (lat)gps.location.lat();
                 pos.Lng = (lng)gps.location.lng();

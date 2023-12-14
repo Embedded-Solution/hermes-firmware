@@ -346,6 +346,7 @@ int Dive::checkIndex()
 
         JsonObject dive = indexJson[ID].as<JsonObject>();
         const int bddID = dive["uploaded"];
+        log_v("Uploaded = %d", uploaded);
 
         // if diveId can't be uploaded (-1), check if there is data and at least one valid GPS, datetime and min depth
         if (bddID != -1)
@@ -501,7 +502,6 @@ String Dive::createID(long time)
         hash = hash + str;
     }
 
-    setModemSleep();
     return hash;
 }
 
