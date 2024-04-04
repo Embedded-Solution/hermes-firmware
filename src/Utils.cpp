@@ -1,4 +1,15 @@
 #include <Utils.hpp>
+//INTERRUPTION TS
+//INTERRUPTION TOUCH SENSOR
+static void ts_intr(void *arg)
+{
+
+    //clear interrupt
+    touch_pad_clear_status();
+
+}
+
+
 
 String remoraID()
 {
@@ -84,6 +95,25 @@ void sleep(int mode)
         esp_sleep_enable_ext1_wakeup(wakeMask, ESP_EXT1_WAKEUP_ANY_HIGH);
         break;
     }
+//  FRM SE REVEILLER SUR LE WATER TS GPIO 2
+//			INIT  GENERALES DES TS
+				ESP_ERROR_CHECK(touch_pad_init());
+//				INIT DU FILTRAGE NECESSAIRE POUR INTERRUPTION-REVEIL
+				touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+				touch_pad_set_voltage(TOUCH_HVOLT_2V7, TOUCH_LVOLT_0V5, TOUCH_HVOLT_ATTEN_1V);
+//			INIT DE NOTRE TS
+			touch_pad_config(TOUCH_PAD_NUM2, TOUCH_THRESH_NO_USE);
+//			DEMARRER JE NE SAIS QUOI
+			touch_pad_filter_start(TOUCHPAD_FILTER_TOUCH_PERIOD);
+//			REGLER LE SEUIL DE DECLENCHEMENT 
+			touch_pad_set_thresh(TOUCH_PAD_NUM2, TSSEUIL);
+//			REGLER LE SENS DE DECLENCHEMENT = QUAND ON PASSE SOUS LE SEUIL  
+			touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);
+//			ENREGISTRER L'INTERRUPTION
+			touch_pad_isr_register( ts_intr, NULL);
+//			AUTORISER LE REVEIL
+			esp_sleep_enable_touchpad_wakeup();	
+
 
     log_i("Going to sleep now");
     esp_deep_sleep_start();

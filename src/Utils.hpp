@@ -13,5 +13,10 @@ float readBattery();
 void TaskLedBatteryCode(void *parameter);
 int versionCompare(string v1, string v2);
 
+//FRM DEFINES POUR TS
+#define TOUCH_THRESH_NO_USE   (0)
+#define TOUCH_THRESH_PERCENT  (80)
+#define TOUCHPAD_FILTER_TOUCH_PERIOD (10)
+#define TSSEUIL 300
 
 #endif

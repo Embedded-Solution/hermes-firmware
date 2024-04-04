@@ -53,6 +53,19 @@ void wake()
         wakeup_reason = esp_sleep_get_ext1_wakeup_status();
         uint64_t mask = 1;
         int i = 0;
+//      MODIF FRM POUR REVEIL SUR TS
+//      SI ON SORT DE SOMMEIL A CAUSE DU TS
+        if(esp_sleep_get_wakeup_cause()==ESP_SLEEP_WAKEUP_TOUCHPAD)
+//      ALORS
+        {
+//          PLONGEE
+            dynamicDive();
+        }
+//      FINSI        
+
+ 
+
+
         while (i < 64)
         {
             if (wakeup_reason & mask)
