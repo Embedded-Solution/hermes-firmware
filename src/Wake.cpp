@@ -155,7 +155,7 @@ void dynamicDive()
         tsys01 temperatureSensor = tsys01();
         ms5837 depthSensor = ms5837();
 
-        RunningAverage depthRAvg(30);
+        RunningAverage depthRAvg(SAMPLES_NUMBER_DEPTH_CHECK);
 
         bool led_on = false;
         bool endDive = false;
