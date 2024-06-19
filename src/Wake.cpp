@@ -53,18 +53,12 @@ void wake()
         wakeup_reason = esp_sleep_get_ext1_wakeup_status();
         uint64_t mask = 1;
         int i = 0;
-//      MODIF FRM POUR REVEIL SUR TS
-//      SI ON SORT DE SOMMEIL A CAUSE DU TS
-        if(esp_sleep_get_wakeup_cause()==ESP_SLEEP_WAKEUP_TOUCHPAD)
-//      ALORS
+
+//if wake up with water sensor, start dive
+        if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
         {
-//          PLONGEE
             dynamicDive();
         }
-//      FINSI        
-
- 
-
 
         while (i < 64)
         {
@@ -447,6 +441,7 @@ void selectMode()
     }
 }
 
+// 1 : underwater, 0 : air
 bool detectSurface(float levelSurfaceDetection)
 {
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
