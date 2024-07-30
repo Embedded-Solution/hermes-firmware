@@ -42,6 +42,7 @@
 #define ENDING_DIVE_DEPTH_AMPLITUDE 0.15 // min depth amplitude to end dive, if depth amplitude below val, diver is out of water.
 #define SAMPLES_NUMBER_DEPTH_CHECK 30    // number of samples to calculate average depth and depth amplitude during end of dive
 #define TIMER_DEL_CREDENTIALS 10         // Time to press config button to delete all credentials
+#define TIME_CHECK_BATTERY 60000         // Time to check battery level while charging
 
 // Upload parameters
 const String indexPath = "/index.json";

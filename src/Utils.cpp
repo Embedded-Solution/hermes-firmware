@@ -140,7 +140,7 @@ void TaskLedBatteryCode(void *parameter)
         unsigned long currentMillis = millis();
 
         // check batteryLevel every 60s
-        if (currentMillis - previousMillisBattery >= 60000)
+        if (currentMillis - previousMillisBattery >= TIME_CHECK_BATTERY)
         {
             batteryLevel = readBattery();
             previousMillisBattery = currentMillis;
