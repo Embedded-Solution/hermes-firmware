@@ -148,8 +148,7 @@ void dynamicDive()
         Dive d(&sd);
         tsys01 temperatureSensor = tsys01();
         ms5837 depthSensor = ms5837();
-
-        RunningAverage depthRAvg(SAMPLES_NUMBER_DEPTH_CHECK);
+        WaterTouchSensor waterSensor = WaterTouchSensor(12, 40);
 
         bool led_on = false;
         bool endDive = false;
@@ -248,18 +247,15 @@ void dynamicDive()
                         pinMode(GPIO_VCC_SENSE, OUTPUT);
                     }
 
-                    /////////////////// Depth Running Amplitude & average to detect end of dive/////////////
-                    depthRAvg.addValue(depth);
-
-                    // if avg depth is low (near surface), check depth amplitude to detect end of dive.
-                    if (depthRAvg.getAverage() < MIN_DEPTH_CHECK_AMPLITUDE)
+                    // if depth is low (near surface), check water sensor to detect end of dive.
+                    if (depthSensor.getDepth() < MIN_DEPTH_CHECK_END_DIVE)
                     {
-                        // if depth amplitude lower than min val, diver is out of water, end dive.
-                        if (depthRAvg.getAmplitude() < ENDING_DIVE_DEPTH_AMPLITUDE)
+                        //TODO check water sensor to detect end of dive.
+                        if (waterSensor.isWaterDetected() == false)
                             count++;
                         else
                             count = 0;
-                        log_v("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
+                        log_v("Water : %d\tAverage : %3.3f\tCount : %d", checkWater(), depthSensor.getDepth(), count);
                     }
                     else
                     {

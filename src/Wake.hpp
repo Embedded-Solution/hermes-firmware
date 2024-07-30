@@ -9,6 +9,7 @@
 #include <hal/TSYS01.hpp>
 #include <hal/MS5837.hpp>
 #include <hal/remora-hal.h>
+#include <hal/WaterTouchSensor.h>
 #include <Storage/SecureDigital.hpp>
 #include <Navigation/GNSS.hpp>
 #include <Utils.hpp>
