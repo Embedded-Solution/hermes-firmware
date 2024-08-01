@@ -1,15 +1,11 @@
 #include <Utils.hpp>
-//INTERRUPTION TS
-//INTERRUPTION TOUCH SENSOR
+// INTERRUPTION TS
+// INTERRUPTION TOUCH SENSOR
 static void ts_intr(void *arg)
 {
-
-    //clear interrupt
+    // clear interrupt
     touch_pad_clear_status();
-
 }
-
-
 
 String remoraID()
 {
@@ -95,25 +91,19 @@ void sleep(int mode)
         esp_sleep_enable_ext1_wakeup(wakeMask, ESP_EXT1_WAKEUP_ANY_HIGH);
         break;
     }
-//  FRM SE REVEILLER SUR LE WATER TS GPIO 2
-//			INIT  GENERALES DES TS
-				ESP_ERROR_CHECK(touch_pad_init());
-//				INIT DU FILTRAGE NECESSAIRE POUR INTERRUPTION-REVEIL
-				touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-				touch_pad_set_voltage(TOUCH_HVOLT_2V7, TOUCH_LVOLT_0V5, TOUCH_HVOLT_ATTEN_1V);
-//			INIT DE NOTRE TS
-			touch_pad_config(TOUCH_PAD_NUM2, TOUCH_THRESH_NO_USE);
-//			DEMARRER JE NE SAIS QUOI
-			touch_pad_filter_start(TOUCHPAD_FILTER_TOUCH_PERIOD);
-//			REGLER LE SEUIL DE DECLENCHEMENT 
-			touch_pad_set_thresh(TOUCH_PAD_NUM2, TSSEUIL);
-//			REGLER LE SENS DE DECLENCHEMENT = QUAND ON PASSE SOUS LE SEUIL  
-			touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);
-//			ENREGISTRER L'INTERRUPTION
-			touch_pad_isr_register( ts_intr, NULL);
-//			AUTORISER LE REVEIL
-			esp_sleep_enable_touchpad_wakeup();	
-
+    //	prepare wake up from touch pin 2
+    ESP_ERROR_CHECK(touch_pad_init());
+    touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+    touch_pad_set_voltage(TOUCH_HVOLT_2V7, TOUCH_LVOLT_0V5, TOUCH_HVOLT_ATTEN_1V);
+    touch_pad_config(WATER_TOUCH_PIN, TOUCH_THRESH_NO_USE);
+    touch_pad_filter_start(TOUCHPAD_FILTER_TOUCH_PERIOD);
+    // configure wake up threshold
+    touch_pad_set_thresh(WATER_TOUCH_PIN, WAKE_UP_WATER_THRESHOLD);
+    touch_pad_set_trigger_mode(TOUCH_TRIGGER_BELOW);
+    // setting interrupt
+    touch_pad_isr_register(ts_intr, NULL);
+    // activate wake up
+    esp_sleep_enable_touchpad_wakeup();
 
     log_i("Going to sleep now");
     esp_deep_sleep_start();
@@ -171,44 +161,45 @@ void TaskLedBatteryCode(void *parameter)
     }
 }
 
+// Method to compare two versions.
+// Returns 1 if v2 is smaller, -1
+// if v1 is smaller, 0 if equal
+int versionCompare(string v1, string v2)
+{
+    // vnum stores each numeric
+    // part of version
+    int vnum1 = 0, vnum2 = 0;
 
-// Method to compare two versions. 
-// Returns 1 if v2 is smaller, -1 
-// if v1 is smaller, 0 if equal 
-int versionCompare(string v1, string v2) 
-{ 
-    // vnum stores each numeric 
-    // part of version 
-    int vnum1 = 0, vnum2 = 0; 
- 
-    // loop until both string are 
-    // processed 
-    for (int i = 0, j = 0; (i < v1.length() 
-                            || j < v2.length());) { 
-        // storing numeric part of 
-        // version 1 in vnum1 
-        while (i < v1.length() && v1[i] != '.') { 
-            vnum1 = vnum1 * 10 + (v1[i] - '0'); 
-            i++; 
-        } 
- 
-        // storing numeric part of 
-        // version 2 in vnum2 
-        while (j < v2.length() && v2[j] != '.') { 
-            vnum2 = vnum2 * 10 + (v2[j] - '0'); 
-            j++; 
-        } 
- 
-        if (vnum1 > vnum2) 
-            return 1; 
-        if (vnum2 > vnum1) 
-            return -1; 
- 
-        // if equal, reset variables and 
-        // go for next numeric part 
-        vnum1 = vnum2 = 0; 
-        i++; 
-        j++; 
-    } 
-    return 0; 
+    // loop until both string are
+    // processed
+    for (int i = 0, j = 0; (i < v1.length() || j < v2.length());)
+    {
+        // storing numeric part of
+        // version 1 in vnum1
+        while (i < v1.length() && v1[i] != '.')
+        {
+            vnum1 = vnum1 * 10 + (v1[i] - '0');
+            i++;
+        }
+
+        // storing numeric part of
+        // version 2 in vnum2
+        while (j < v2.length() && v2[j] != '.')
+        {
+            vnum2 = vnum2 * 10 + (v2[j] - '0');
+            j++;
+        }
+
+        if (vnum1 > vnum2)
+            return 1;
+        if (vnum2 > vnum1)
+            return -1;
+
+        // if equal, reset variables and
+        // go for next numeric part
+        vnum1 = vnum2 = 0;
+        i++;
+        j++;
+    }
+    return 0;
 }

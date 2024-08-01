@@ -6,7 +6,7 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION "4.0"
+#define FIRMWARE_VERSION "4.01"
 // Debug parameters
 #ifdef TAG
 #undef TAG
@@ -43,6 +43,16 @@
 #define SAMPLES_NUMBER_DEPTH_CHECK 30    // number of samples to calculate average depth and depth amplitude during end of dive
 #define TIMER_DEL_CREDENTIALS 10         // Time to press config button to delete all credentials
 #define TIME_CHECK_BATTERY 60000         // Time to check battery level while charging
+
+
+// Water sensor parameters 
+#define WATER_TOUCH_PIN TOUCH_PAD_NUM2
+#define WAKE_UP_WATER_THRESHOLD 300
+#define END_DIVE_WATER_THRESHOLD 400
+
+#define TOUCH_THRESH_NO_USE   (0)
+#define TOUCH_THRESH_PERCENT  (80)
+#define TOUCHPAD_FILTER_TOUCH_PERIOD (10)
 
 // Upload parameters
 const String indexPath = "/index.json";

@@ -279,11 +279,11 @@ int ota(SecureDigital sd)
             log_d("Name = %s", version.c_str());
 
             version.remove(0, 10);
-            log_i("OTA firmware = %s\tOld firmware = %s", version.c_str(), FIRMWARE_VERSION);
+            log_i("OTA firmware = %s\tRemora firmware = %s", version.c_str(), FIRMWARE_VERSION);
 
             if (versionCompare(version.c_str(), FIRMWARE_VERSION) > 0)
             {
-                log_d("Old firmware version smaller, start Update");
+                log_d("Remora firmware version smaller, start Update");
 
                 // Start update
                 size_t written = 0;

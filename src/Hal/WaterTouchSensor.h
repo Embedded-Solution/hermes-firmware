@@ -4,7 +4,8 @@
 #include <Arduino.h>
 #include <Preferences.h>
 
-class WaterTouchSensor {
+class WaterTouchSensor
+{
 public:
     WaterTouchSensor(uint8_t pin, uint16_t threshold);
     void begin();
@@ -13,14 +14,16 @@ public:
     void setThreshold(uint16_t threshold);
     uint16_t getThreshold() const;
 
-    void updateAirValue(uint16_t value);
-    void updateWaterValue(uint16_t value);
+    void updateAirValue();
+    void updateWaterValue();
     float getLowLimit() const;
     float getHighLimit() const;
     void updateThreshold();
 
     void loadFromMemory();
     void saveToMemory();
+
+    void logLimits();
 
 private:
     uint8_t _pin;
@@ -36,7 +39,7 @@ private:
 
     float calculateAverage(const uint16_t values[], uint8_t count) const;
     bool isValueValid(uint16_t value) const;
-    void updateTouchInterrupt();
+    uint16_t read();
 };
 
 #endif // WATERTOUCHSENSOR_H

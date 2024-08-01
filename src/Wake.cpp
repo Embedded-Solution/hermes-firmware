@@ -3,6 +3,7 @@
 using namespace std;
 SecureDigital sd;
 WifiManager wm;
+WaterTouchSensor waterSensor(WATER_TOUCH_PIN, END_DIVE_WATER_THRESHOLD);
 
 // variables permanentes pour le mode de plongée statique
 RTC_DATA_ATTR Dive staticDive(&sd);
@@ -19,6 +20,8 @@ void IRAM_ATTR ISR()
 
 void wake()
 {
+    waterSensor.begin();
+
     // setup gpios
     log_i("firmware version:%s\n", FIRMWARE_VERSION);
     sd.writeFile("/version.txt", String(FIRMWARE_VERSION));
@@ -54,7 +57,7 @@ void wake()
         uint64_t mask = 1;
         int i = 0;
 
-//if wake up with water sensor, start dive
+        // if wake up with water sensor, start dive
         if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
         {
             dynamicDive();
@@ -80,9 +83,9 @@ void wake()
                 }
                 else if (i == GPIO_VCC_SENSE) // wifi config
                 {
-                    log_d("Wake up gpio vcc sense");
+                    log_i("Wake up gpio vcc sense");
 
-                    log_d("Start Check Index ");
+                    log_i("Start Check Index ");
                     Dive d(&sd);
                     d.checkIndex();
                     log_d("End Check Index ");
@@ -148,7 +151,6 @@ void dynamicDive()
         Dive d(&sd);
         tsys01 temperatureSensor = tsys01();
         ms5837 depthSensor = ms5837();
-        WaterTouchSensor waterSensor = WaterTouchSensor(12, 40);
 
         bool led_on = false;
         bool endDive = false;
@@ -250,7 +252,7 @@ void dynamicDive()
                     // if depth is low (near surface), check water sensor to detect end of dive.
                     if (depthSensor.getDepth() < MIN_DEPTH_CHECK_END_DIVE)
                     {
-                        //TODO check water sensor to detect end of dive.
+                        // TODO check water sensor to detect end of dive.
                         if (waterSensor.isWaterDetected() == false)
                             count++;
                         else

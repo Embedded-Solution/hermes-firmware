@@ -15,7 +15,7 @@
 #include <Utils.hpp>
 #include <Connect/Connect.hpp>
 #include <Settings.hpp>
-#include <RunningAverage/RunningAverage.hpp>
+#include <Hal/WaterTouchSensor.h>
 
 #define DYNAMIC_MODE 0
 #define STATIC_MODE 1
