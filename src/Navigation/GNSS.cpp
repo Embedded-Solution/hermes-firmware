@@ -57,7 +57,7 @@ time_t GNSS::getTime()
     return mktime(&tm); // return time and date from gps converted into timestamp
 }
 
-Position GNSS::parseRecord(struct Record *records)
+Position GNSS::parseStart(struct Record *records)
 {
     Position pos = {0};
     digitalWrite(GPIO_LED2, HIGH);
@@ -106,7 +106,7 @@ Position GNSS::parseRecord(struct Record *records)
                     (uint8_t)(gps.date.year() - 1970)};
                 setTime(makeTime(gpsTime));
 
-                if (year() > 2020 && year() < 2030 && !timeOK)
+                if (year() > 2020 && year() < 2050 && !timeOK)
                 {
                     timeOK = true;
                     pos.dateTime = now();
@@ -129,7 +129,7 @@ Position GNSS::parseRecord(struct Record *records)
                 previousTime = currentTime; // reset previous time
             }
 
-            if (count >= TIME_GPS_RECORDS) // if new records required
+            if (count >= TIME_GPS_RECORDS && idRecord < sizeof(records)) // if new records required and array not full
             {
                 count = 0;
 
@@ -143,10 +143,10 @@ Position GNSS::parseRecord(struct Record *records)
         }
     }
     digitalWrite(GPIO_LED2, LOW);                       // turn syn led off when gps connected
-    pos.dateTime = now() - idRecord * TIME_GPS_RECORDS; // start datetime is the before the gps search so we remove the duration of the gps search.
+    pos.dateTime = now() - idRecord * TIME_GPS_RECORDS; // start datetime is before the gps search so we remove the duration of the gps search.
     log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
-    if (timeOK && gpsOK) //save if datetime and position is ok
+    if (timeOK && gpsOK) // save if datetime and position is ok
     {
         pos.valid = true;
         log_d("POsition and dateTime valid");
@@ -155,7 +155,7 @@ Position GNSS::parseRecord(struct Record *records)
     return pos;
 }
 
-Position GNSS::parseEnd(void)
+Position GNSS::parseEnd(struct Record *records)
 {
     Position pos = {0};
     digitalWrite(GPIO_LED2, HIGH);
@@ -165,9 +165,26 @@ Position GNSS::parseEnd(void)
     GPSSerial.begin(9600);
     delay(500); // TODO this needs to be more dynamic
     unsigned long start = millis();
-    bool gpsOK = false, timeOK = false;
+    bool gpsOK = false, timeOK = false, recordsOK = false;
 
-    while (millis() < start + TIME_GPS_END * 1000 && (!gpsOK || !timeOK))
+    pinMode(GPIO_SENSOR_POWER, OUTPUT);
+    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    delay(10);
+    Wire.begin(I2C_SDA, I2C_SCL);
+    delay(10);
+
+    tsys01 temperatureSensor = tsys01();
+    ms5837 depthSensor = ms5837();
+    double temp = temperatureSensor.getTemp();
+    double depth = depthSensor.getDepth();
+
+    unsigned long previousTime = 0, currentTime = 0;
+    int idRecord = 0;
+    int count = 0;
+
+    currentTime = getTime(); // Init Current TIme
+
+    while (millis() < start + TIME_GPS_END * 1000 && (!gpsOK || !timeOK || !recordsOK))
     {
         if (GPSSerial.available() > 0 && gps.encode(GPSSerial.read()))
         {
@@ -186,23 +203,53 @@ Position GNSS::parseEnd(void)
                     (uint8_t)gps.date.month(),
                     (uint8_t)(gps.date.year() - 1970)};
                 setTime(makeTime(gpsTime));
-                if (year() > 2020 && year() < 2030 && !timeOK)
+
+                if (year() > 2020 && year() < 2050)
                 {
                     timeOK = true;
                     pos.dateTime = now();
-                    log_d("TImeOK\tDateTime: %ld\tNow:%ld", pos.dateTime, now());
+                    log_d("DateTime: %ld\tNow:%ld", pos.dateTime, now());
                 }
             }
             if (gps.location.isValid())
             {
-                log_v("Position: %f , %f", getLat(), getLng());
+                log_d("Position: %f , %f", getLat(), getLng());
                 gpsOK = true;
                 pos.Lat = (lat)gps.location.lat();
                 pos.Lng = (lng)gps.location.lng();
             }
+            depth = depthSensor.getDepth();
+            currentTime = getTime();
+
+            if (currentTime != previousTime) // check if time changed
+            {
+                count++;
+                previousTime = currentTime; // reset previous time
+            }
+
+            if (count >= TIME_GPS_RECORDS && !recordsOK) // if new records required and array not full
+            {
+                count = 0;
+
+                // save temp and depth
+                temp = temperatureSensor.getTemp();
+                records[idRecord].Depth = depth;
+                records[idRecord].Temp = temp;
+                records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS;
+                idRecord++;
+                if (idRecord == sizeof(records))
+                    recordsOK = true;
+            }
         }
     }
     digitalWrite(GPIO_LED2, LOW); // turn syn led off when gps connected
+    log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
+
+    if (timeOK && gpsOK) // save if datetime and position is ok
+    {
+        pos.valid = true;
+        log_d("POsition and dateTime valid");
+    }
 
     return pos;
 }

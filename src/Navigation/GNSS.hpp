@@ -30,9 +30,9 @@ public:
 
     lat getLat();
     lng getLng();
-    Position parseRecord(struct Record *records);
+    Position parseStart(struct Record *records);
     void parse();
-    Position parseEnd();
+    Position parseEnd(struct Record *records);
     time_t getTime();
 
 private:

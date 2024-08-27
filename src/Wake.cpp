@@ -162,8 +162,7 @@ void dynamicDive()
             gpsRecords[x] = {-1000, 0, 0};
 
         // get gps position, dateTime and records during gps search.
-        Position startPos = gps.parseRecord(gpsRecords);
-        // unsigned long startTime = pos.dateTime;
+        Position startPos = gps.parseStart(gpsRecords);
 
         if (d.Start(startPos.dateTime, startPos.Lat, startPos.Lng, TIME_DYNAMIC_MODE, diveMode) != "")
         {
@@ -172,7 +171,7 @@ void dynamicDive()
             // save records from gps search
             for (int i = 0; i < len; i++)
             {
-                if (gpsRecords[i].Temp > -100)
+                if (gpsRecords[i].Temp > -1000)
                 {
                     timer += TIME_GPS_RECORDS;
                     d.NewRecord(gpsRecords[i]);
@@ -278,7 +277,25 @@ void dynamicDive()
             if (validDive == true && lowBat == false && vccSense == false)
             {
                 log_d("Normal end dive");
-                Position endPos = gps.parseEnd();
+                // Init struct for recording during gps research
+                int len = TIME_END_RECORDS / (TIME_GPS_RECORDS);
+                struct Record gpsRecords[len];
+                for (int x = 0; x < len; x++)
+                    gpsRecords[x] = {-1000, 0, 0};
+
+                // get gps position, dateTime and records during gps search.
+                Position endPos = gps.parseEnd(gpsRecords);
+
+                // save records from gps search
+                for (int i = 0; i < len; i++)
+                {
+                    if (gpsRecords[i].Temp > -1000)
+                    {
+                        timer += TIME_GPS_RECORDS;
+                        d.NewRecord(gpsRecords[i]);
+                    }
+                }
+
                 end = d.End(endPos.dateTime, endPos.Lat, endPos.Lng, diveMode);
 
                 if (!startPos.valid && !endPos.valid)
