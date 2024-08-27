@@ -5,9 +5,6 @@ void WifiManager::startPortal(SecureDigital sd)
   WebServer Server;
   AutoConnect Portal(Server);
 
-  TaskHandle_t TaskLedBattery;
-  xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
-  
   log_v("starting config portal...");
 
   AutoConnectConfig acConfig("Remora Config", "cousteau", 0, AUTOCONNECT_AP_CH);
@@ -28,7 +25,10 @@ void WifiManager::startPortal(SecureDigital sd)
   Portal.load(page);
 
   SPIFFS.end();
-
+  
+  TaskHandle_t TaskLedBattery;
+  xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
+  
   Portal.begin();
   if (MDNS.begin("remora"))
   {
