@@ -284,7 +284,7 @@ void dynamicDive()
                     gpsRecords[x] = {-1000, 0, 0};
 
                 // get gps position, dateTime and records during gps search.
-                Position endPos = gps.parseEnd(gpsRecords, len);
+                Position endPos = gps.parseEnd(gpsRecords, len, timer);
 
                 // save records from gps search
                 for (int i = 0; i < len; i++)

@@ -32,7 +32,7 @@ public:
     lng getLng();
     Position parseStart(struct Record *records);
     void parse();
-    Position parseEnd(struct Record *records, int recordsLength);
+    Position parseEnd(struct Record *records, int recordsLength, int oldTime);
     time_t getTime();
 
 private:

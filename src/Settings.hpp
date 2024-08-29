@@ -26,7 +26,7 @@
 #define MAX_DEPTH_CHECK_WATER 0.5        /* Max depth for water detection (meter)*/
 #define MAX_DEPTH_CHECK_GPS 1.0          /* Max depth for gps detection (meter)*/
 #define MAX_DYNAMIC_COUNTER_VALID_DIVE 1 /* Number of No Water to end dynamic dive (TIME_DYNAMIC_MODE  * MAX_DYNAMIC_COUNTER_VALID_DIVE = seconds)*/
-#define MAX_DYNAMIC_COUNTER_NO_DIVE 600  /* Number of No Water to end dynamic dive (TIME_DYNAMIC_MODE  * MAX_DYNAMIC_COUNTER_NO_DIVE = seconds) at the beginning of the dive*/
+#define MAX_DYNAMIC_COUNTER_NO_DIVE 300  /* Number of No Water to end dynamic dive (TIME_DYNAMIC_MODE  * MAX_DYNAMIC_COUNTER_NO_DIVE = seconds) at the beginning of the dive*/
 #define MAX_STATIC_COUNTER 2             /* Number of No Water to end static dive (TIME_TO_SLEEP_STATIC * MAX_STATIC_COUNTER = seconds )*/
 #define WATER_TRIGGER 1500               // mV water detection level (0 to 3300) (lower value for pure water)
 #define TIME_GPS_START 600               // research time gps at the beginning of the dive(seconds)

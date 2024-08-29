@@ -155,7 +155,7 @@ Position GNSS::parseStart(struct Record *records)
     return pos;
 }
 
-Position GNSS::parseEnd(struct Record *records, int recordsLength)
+Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
 {
     Position pos = {0};
     digitalWrite(GPIO_LED2, HIGH);
@@ -223,7 +223,7 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength)
             depth = depthSensor.getDepth();
             currentTime = getTime();
 
-            if (currentTime != previousTime) // check if time changed
+            if (currentTime != previousTime && !recordsOK) // check if time changed
             {
                 count++;
                 previousTime = currentTime; // reset previous time
@@ -237,7 +237,7 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength)
                 temp = temperatureSensor.getTemp();
                 records[idRecord].Depth = depth;
                 records[idRecord].Temp = temp;
-                records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS;
+                records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS + oldTime;
                 idRecord++;
                 if (idRecord == recordsLength)
                     recordsOK = true;
