@@ -155,7 +155,7 @@ Position GNSS::parseStart(struct Record *records)
     return pos;
 }
 
-Position GNSS::parseEnd(struct Record *records)
+Position GNSS::parseEnd(struct Record *records, int recordsLength)
 {
     Position pos = {0};
     digitalWrite(GPIO_LED2, HIGH);
@@ -188,6 +188,8 @@ Position GNSS::parseEnd(struct Record *records)
     {
         if (GPSSerial.available() > 0 && gps.encode(GPSSerial.read()))
         {
+            log_d("Count %d, IdRecord %d", count, idRecord);
+
             if (gps.date.isValid() && gps.time.isValid())
             {
                 log_v("Date: %d/%d/%d\tHour: %d:%d:%d",
@@ -237,7 +239,7 @@ Position GNSS::parseEnd(struct Record *records)
                 records[idRecord].Temp = temp;
                 records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS;
                 idRecord++;
-                if (idRecord == sizeof(records))
+                if (idRecord == recordsLength)
                     recordsOK = true;
             }
         }
