@@ -1,4 +1,5 @@
 #include "WifiManager.hpp"
+#include <esp_task_wdt.h> // Nécessaire pour gérer le Task Watchdog Timer (TWDT)
 
 void WifiManager::startPortal(SecureDigital sd)
 {
@@ -25,10 +26,11 @@ void WifiManager::startPortal(SecureDigital sd)
   Portal.load(page);
 
   SPIFFS.end();
-  
+
+  esp_task_wdt_init(60, false); // 60 secondes, false pour désactiver le WDT pour toutes les tâches
   TaskHandle_t TaskLedBattery;
   xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
-  
+
   Portal.begin();
   if (MDNS.begin("remora"))
   {
@@ -46,7 +48,9 @@ void WifiManager::startPortal(SecureDigital sd)
   detachInterrupt(GPIO_VCC_SENSE);
 
   log_v("Wifi connected");
- 
+
+  esp_task_wdt_init(60, true); // 60 secondes, true pour réactiver le WDT pour toutes les tâches
+
   log_v("Start upload dives");
 
   while (WiFi.status() == WL_CONNECTED && digitalRead(GPIO_VCC_SENSE))
