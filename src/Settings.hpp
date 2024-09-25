@@ -6,7 +6,7 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION "4.03"
+#define FIRMWARE_VERSION "4.05"
 // Debug parameters
 #ifdef TAG
 #undef TAG
@@ -36,7 +36,7 @@
 #define BEGIN_SURFACE_DETECTION 0.05     // depth max-min to detect surface crossing at the beggining of the dive
 #define LOW_BATTERY_LEVEL 3.3            //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
 #define BATTERY_LEVEL_25 3.7             //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
-#define BATTERY_LEVEL_75 4               //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
+#define BATTERY_LEVEL_75 4.2               //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
 #define TIME_UPLOAD_OTA 3600             // Time between 2 upload and OTA check (seconds)
 #define TIME_CHECK_POWER 60              // Time between 2 battery ccheck during dynamic dive. (seconds)
 #define MIN_DEPTH_CHECK_END_DIVE 3.0     // min depth to check water sensor before ending dive. (meter)
@@ -47,7 +47,7 @@
 
 // Water sensor parameters
 #define WATER_TOUCH_PIN TOUCH_PAD_NUM2
-#define WAKE_UP_WATER_THRESHOLD 300
+#define WAKE_UP_WATER_THRESHOLD 350
 #define END_DIVE_WATER_THRESHOLD 400
 
 #define TOUCH_THRESH_NO_USE (0)
