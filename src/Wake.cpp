@@ -301,7 +301,9 @@ void dynamicDive()
                 if (!startPos.valid && !endPos.valid)
                 {
                     log_d("Dive valid but no valid pos, record deleted");
+#ifdef DELETE_UNVALID_DIVES
                     d.deleteID(d.getID());
+#endif
                 }
             }
             else if (validDive == true && lowBat == true && startPos.valid == true) // if lowbat and  datetime and gps ok save datas and set ready to upload
@@ -318,8 +320,9 @@ void dynamicDive()
             else
             {
                 log_d("Dive not valid, record deleted");
+#ifdef DELETE_UNVALID_DIVES
                 d.deleteID(d.getID());
-
+#endif
                 if (lowBat == true) // if dive not valid AND lowBatt, low batt sleep
                     sleep(LOW_BATT_SLEEP);
             }
