@@ -251,6 +251,7 @@ void dynamicDive()
                     // if depth is low (near surface), check water sensor to detect end of dive.
                     if (depthSensor.getDepth() < MIN_DEPTH_CHECK_END_DIVE)
                     {
+                        log_d("DEPTH WATER DETECTION : %2.2f");
                         // TODO check water sensor to detect end of dive.
                         if (waterSensor.isWaterDetected() == false)
                             count++;

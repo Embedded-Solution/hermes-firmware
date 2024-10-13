@@ -19,6 +19,7 @@ void WaterTouchSensor::begin()
 bool WaterTouchSensor::isWaterDetected()
 {
     uint16_t value = touchRead(_pin) * 10;
+    log_d("WATER VALUE : %d", value);
     return value < _threshold;
 }
 
