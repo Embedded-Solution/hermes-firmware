@@ -60,6 +60,7 @@ void wake()
         // if wake up with water sensor, start dive
         if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
         {
+            log_d("Dynamic dive with touchpad wake up");
             dynamicDive();
         }
 
@@ -163,6 +164,7 @@ void dynamicDive()
 
         // get gps position, dateTime and records during gps search.
         Position startPos = gps.parseStart(gpsRecords);
+        log_v("ParseStart ended");
 
         if (d.Start(startPos.dateTime, startPos.Lat, startPos.Lng, TIME_DYNAMIC_MODE, diveMode) != "")
         {
@@ -203,7 +205,7 @@ void dynamicDive()
 
                     temp = temperatureSensor.getTemp();
                     depth = depthSensor.getDepth();
-                    log_v("Temp = %2.2f\t Depth = %3.3f\t Pressure = %4.4f", temp, depth, depthSensor.getPressure());
+                    log_d("Temp = %2.2f\t Depth = %3.3f\t Pressure = %4.4f", temp, depth, depthSensor.getPressure());
 
                     ///////////////// Detect end of dive ////////////////////
                     // if dive still not valid, check if depthMin reached
@@ -211,6 +213,7 @@ void dynamicDive()
                     {
                         if (depth > MIN_DEPTH_VALID_DIVE)
                         {
+                            log_d("UNDERWATER DETECTION : %d", waterSensor.read());
                             log_d("Valid Dive, reset counter end dive");
                             validDive = true; // if minDepth reached, dive is valid
                             count = 0;        // reset count before detect end of dive
@@ -251,13 +254,12 @@ void dynamicDive()
                     // if depth is low (near surface), check water sensor to detect end of dive.
                     if (depthSensor.getDepth() < MIN_DEPTH_CHECK_END_DIVE)
                     {
-                        log_d("DEPTH WATER DETECTION : %2.2f");
                         // TODO check water sensor to detect end of dive.
                         if (waterSensor.isWaterDetected() == false)
                             count++;
                         else
                             count = 0;
-                        log_v("Water : %d\tAverage : %3.3f\tCount : %d", checkWater(), depthSensor.getDepth(), count);
+                        log_v("Water : %d\tAverage : %3.3f\tCount : %d", waterSensor.read(), depthSensor.getDepth(), count);
                     }
                     else
                     {
@@ -267,6 +269,7 @@ void dynamicDive()
                     if (count >= (validDive == true ? MAX_DYNAMIC_COUNTER_VALID_DIVE : MAX_DYNAMIC_COUNTER_NO_DIVE))
                     {
                         endDive = true;
+                        log_d("Dive ending with counter");
                     }
                     /////////////////// Depth Running Amplitude & average to detect end of dive/////////////
                 }

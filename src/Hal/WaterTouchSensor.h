@@ -24,6 +24,8 @@ public:
     void saveToMemory();
 
     void logLimits();
+        uint16_t read();
+
 
 private:
     uint8_t _pin;
@@ -39,7 +41,6 @@ private:
 
     float calculateAverage(const uint16_t values[], uint8_t count) const;
     bool isValueValid(uint16_t value) const;
-    uint16_t read();
 };
 
 #endif // WATERTOUCHSENSOR_H

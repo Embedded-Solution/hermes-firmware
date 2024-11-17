@@ -6,7 +6,7 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION "4.06"
+#define FIRMWARE_VERSION "4.08"
 // Debug parameters
 #ifdef TAG
 #undef TAG
@@ -16,7 +16,7 @@
 // #define SERIAL1_DEBUG_OUTPUT
 // #define DELETE_UNVALID_DIVES
 #define LOG_ON_SD_CARD
-#define LOG_LEVEL ESP_LOG_DEBUG
+#define LOG_LEVEL ESP_LOG_VERBOSE
 
 // Dives parameters
 #define OFFSET_SLEEP_STATIC 1700         /*Offset going to sleep and wake up static mode*/

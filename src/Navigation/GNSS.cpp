@@ -139,6 +139,7 @@ Position GNSS::parseStart(struct Record *records)
                 records[idRecord].Temp = temp;
                 records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS;
                 idRecord++;
+                log_v("ID records during gps search : %d",idRecord);
             }
         }
     }
