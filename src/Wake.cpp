@@ -1,8 +1,11 @@
 #include <Wake.hpp>
+#include <RunningAverage/RunningAverage.hpp>
 
 using namespace std;
 SecureDigital sd;
 WifiManager wm;
+
+RunningAverage depthRAvg(SAMPLES_NUMBER_DEPTH_CHECK);
 WaterTouchSensor waterSensor(WATER_TOUCH_PIN, END_DIVE_WATER_THRESHOLD);
 
 // variables permanentes pour le mode de plongée statique
@@ -213,11 +216,14 @@ void dynamicDive()
                     {
                         if (depth > MIN_DEPTH_VALID_DIVE)
                         {
-                            log_d("UNDERWATER DETECTION : %d", waterSensor.read());
                             log_d("Valid Dive, reset counter end dive");
                             validDive = true; // if minDepth reached, dive is valid
                             count = 0;        // reset count before detect end of dive
                         }
+                    }
+                    else
+                    {
+                        log_d("UNDERWATER DETECTION : %d", waterSensor.read());
                     }
 
                     // Save record
@@ -251,15 +257,18 @@ void dynamicDive()
                         pinMode(GPIO_VCC_SENSE, OUTPUT);
                     }
 
-                    // if depth is low (near surface), check water sensor to detect end of dive.
-                    if (depthSensor.getDepth() < MIN_DEPTH_CHECK_END_DIVE)
+                    /////////////////// Depth Running Amplitude & average to detect end of dive/////////////
+                    depthRAvg.addValue(depth);
+
+                    // if avg depth is low (near surface), check depth amplitude to detect end of dive.
+                    if (depthRAvg.getAverage() < MIN_DEPTH_CHECK_AMPLITUDE)
                     {
-                        // TODO check water sensor to detect end of dive.
-                        if (waterSensor.isWaterDetected() == false)
+                        // if depth amplitude lower than min val, diver is out of water, end dive.
+                        if (depthRAvg.getAmplitude() < ENDING_DIVE_DEPTH_AMPLITUDE)
                             count++;
                         else
                             count = 0;
-                        log_v("Water : %d\tAverage : %3.3f\tCount : %d", waterSensor.read(), depthSensor.getDepth(), count);
+                        log_v("Amplitude : %3.3f\tAverage : %3.3f\tCount : %d", depthRAvg.getAmplitude(), depthRAvg.getAverage(), count);
                     }
                     else
                     {
