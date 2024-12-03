@@ -139,7 +139,7 @@ Position GNSS::parseStart(struct Record *records)
                 records[idRecord].Temp = temp;
                 records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS;
                 idRecord++;
-                log_v("ID records during gps search : %d",idRecord);
+                log_v("ID records during gps search : %d", idRecord);
             }
         }
     }
@@ -217,9 +217,13 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
             if (gps.location.isValid())
             {
                 log_d("Position: %f , %f", getLat(), getLng());
-                gpsOK = true;
-                pos.Lat = (lat)gps.location.lat();
-                pos.Lng = (lng)gps.location.lng();
+                if (gpsOK == false) //si la position n'avait jamais été obtenue, on sauvegarde uniquement la première pour la sortie de l'eau 
+                {
+                    pos.Lat = (lat)gps.location.lat();
+                    pos.Lng = (lng)gps.location.lng();
+                    gpsOK = true;
+                    digitalWrite(GPIO_GPS_POWER, HIGH); //on éteint la led GPS
+                }
             }
             depth = depthSensor.getDepth();
             currentTime = getTime();
