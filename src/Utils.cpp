@@ -123,11 +123,12 @@ float readBattery()
 void TaskLedBatteryCode(void *parameter)
 {
     unsigned long previousMillisLed = 0, previousMillisBattery = 0;
+    unsigned long currentMillis = 0;
     bool ledState = HIGH;
     float batteryLevel = readBattery();
     for (;;)
     {
-        unsigned long currentMillis = millis();
+        currentMillis = millis();
 
         // check batteryLevel every 60s
         if (currentMillis - previousMillisBattery >= TIME_CHECK_BATTERY)
@@ -157,6 +158,28 @@ void TaskLedBatteryCode(void *parameter)
             // all leds off
             digitalWrite(GPIO_LED1, LOW);
             digitalWrite(GPIO_LED4, LOW);
+        }
+    }
+}
+
+void TaskGpsFixCode(void *parameter)
+{
+    unsigned long currentMillis = millis();
+    unsigned long previousMillis = 0;
+    pinMode(GPIO_GPS_POWER, OUTPUT);
+    digitalWrite(GPIO_GPS_POWER, LOW); // On allume le GPS
+
+    // Init sensors
+    GNSS gps = GNSS();
+
+    for (;;)
+    {
+        currentMillis = millis();
+
+        if (currentMillis - previousMillis >= 1000)
+        {
+            log_d("TaskGpsFixCode, saellites :%d",gps.getSatelliteCount());
+            previousMillis = currentMillis;
         }
     }
 }

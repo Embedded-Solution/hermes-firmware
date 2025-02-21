@@ -6,11 +6,13 @@
 #include <Settings.hpp>
 #include <hal/remora-hal.h>
 #include <Storage/SecureDigital.hpp>
+#include <Navigation/GNSS.hpp>
 
 String remoraID();
 void sleep(int mode = 0);
 float readBattery();
 void TaskLedBatteryCode(void *parameter);
+void TaskGpsFixCode(void *parameter);
 int versionCompare(string v1, string v2);
 
 #endif

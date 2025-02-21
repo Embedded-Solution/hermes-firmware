@@ -31,6 +31,10 @@ void WifiManager::startPortal(SecureDigital sd)
   TaskHandle_t TaskLedBattery;
   xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
 
+  TaskHandle_t TaskGpsFix;
+  xTaskCreatePinnedToCore(TaskGpsFixCode, "TaskGpsFix", 10000, NULL, 0, &TaskGpsFix, 0);
+
+
   Portal.begin();
   if (MDNS.begin("remora"))
   {

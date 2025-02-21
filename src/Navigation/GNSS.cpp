@@ -217,12 +217,12 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
             if (gps.location.isValid())
             {
                 log_d("Position: %f , %f", getLat(), getLng());
-                if (gpsOK == false) //si la position n'avait jamais été obtenue, on sauvegarde uniquement la première pour la sortie de l'eau 
+                if (gpsOK == false) // si la position n'avait jamais été obtenue, on sauvegarde uniquement la première pour la sortie de l'eau
                 {
                     pos.Lat = (lat)gps.location.lat();
                     pos.Lng = (lng)gps.location.lng();
                     gpsOK = true;
-                    digitalWrite(GPIO_GPS_POWER, HIGH); //on éteint la led GPS
+                    digitalWrite(GPIO_GPS_POWER, HIGH); // on éteint la led GPS
                 }
             }
             depth = depthSensor.getDepth();
@@ -259,4 +259,26 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
     }
 
     return pos;
+}
+
+int GNSS::getSatelliteCount()
+{
+    // Activation du module GPS
+    pinMode(GPIO_GPS_POWER, OUTPUT);
+    digitalWrite(GPIO_GPS_POWER, LOW); // On allume le GPS
+
+    // Démarrage de la communication série avec le GPS
+    GPSSerial.begin(9600);
+    delay(1000); // Délai pour permettre l'initialisation
+
+    unsigned long start = millis();
+    int nbSat = -1;
+
+    while (GPSSerial.available() > 0)
+    {
+        if (gps.encode(GPSSerial.read()))
+            nbSat = gps.satellites.value();
+    }
+    log_d("Nombre de satellites connectés (retour par défaut): %d", nbSat);
+    return nbSat;
 }
