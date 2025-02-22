@@ -261,24 +261,55 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
     return pos;
 }
 
-int GNSS::getSatelliteCount()
+int GNSS::getEphemerides()
 {
-    // Activation du module GPS
+
     pinMode(GPIO_GPS_POWER, OUTPUT);
-    digitalWrite(GPIO_GPS_POWER, LOW); // On allume le GPS
+    digitalWrite(GPIO_GPS_POWER, LOW);
+    pinMode(GPIO_SENSOR_POWER, OUTPUT);
+    digitalWrite(GPIO_SENSOR_POWER, LOW);
 
-    // Démarrage de la communication série avec le GPS
     GPSSerial.begin(9600);
-    delay(1000); // Délai pour permettre l'initialisation
-
+    delay(500); // TODO this needs to be more dynamic
     unsigned long start = millis();
-    int nbSat = -1;
 
-    while (GPSSerial.available() > 0)
+    String sentence = "";
+    int nbSat = 0;
+
+    while (millis() < start + TIME_GPS_EPHEMERIDE * 1000)
     {
-        if (gps.encode(GPSSerial.read()))
-            nbSat = gps.satellites.value();
+        while (GPSSerial.available() > 0)
+        {
+            char c = GPSSerial.read();
+            sentence += c;
+            // Lorsqu'une trame complète est reçue (fin de ligne)
+            if (c == '\n')
+            {
+                if (sentence.startsWith("$GPGGA"))
+                {
+                    int fieldIndex = 0;
+                    String fields[15]; // Il y a généralement moins de 15 champs
+                    int startIdx = 0;
+                    for (int i = 0; i < sentence.length(); i++)
+                    {
+                        if (sentence.charAt(i) == ',' || sentence.charAt(i) == '\n')
+                        {
+                            fields[fieldIndex++] = sentence.substring(startIdx, i);
+                            startIdx = i + 1;
+                        }
+                    }
+                    // Vérifier qu'on a bien reçu suffisamment de champs
+                    if (fieldIndex >= 8)
+                    {
+                        // Le 7ème champ (index 6) correspond au nombre de satellites
+                        nbSat = fields[7].toInt();
+                        log_d("Nb satellites : %d", nbSat);
+                    }
+                }
+                // Réinitialiser le tampon pour la prochaine trame
+                sentence = "";
+            }
+        }
     }
-    log_d("Nombre de satellites connectés (retour par défaut): %d", nbSat);
-    return nbSat;
+    return -3;
 }

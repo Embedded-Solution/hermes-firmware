@@ -13,10 +13,10 @@
 #define TAG (char *)"REMORA"
 #endif
 // #define MODE_DEBUG
-// #define SERIAL1_DEBUG_OUTPUT
-// #define DELETE_UNVALID_DIVES
-#define LOG_ON_SD_CARD
-#define LOG_LEVEL ESP_LOG_VERBOSE
+//  #define SERIAL1_DEBUG_OUTPUT
+//  #define DELETE_UNVALID_DIVES
+//  #define LOG_ON_SD_CARD
+#define LOG_LEVEL ESP_LOG_DEBUG
 
 // Dives parameters
 #define OFFSET_SLEEP_STATIC 1700         /*Offset going to sleep and wake up static mode*/
@@ -32,12 +32,13 @@
 #define WATER_TRIGGER 1500               // mV water detection level (0 to 3300) (lower value for pure water)
 #define TIME_GPS_START 600               // research time gps at the beginning of the dive(seconds)
 #define TIME_GPS_END 900                 // research time gps at the end of the dive (seconds)
+#define TIME_GPS_EPHEMERIDE 3600         // research ephemeride gps at the beginning of charging(seconds)
 #define TIME_END_RECORDS 180             // time recording depth/temp at the end of the dive
 #define TIME_SURFACE_DETECTION 5         // Time to detect surface crossing at the beginning of the dive (seconds)
 #define BEGIN_SURFACE_DETECTION 0.05     // depth max-min to detect surface crossing at the beggining of the dive
 #define LOW_BATTERY_LEVEL 3.3            //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
-#define BATTERY_LEVEL_25 3.45             //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
-#define BATTERY_LEVEL_75 4.2               //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
+#define BATTERY_LEVEL_25 3.45            //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
+#define BATTERY_LEVEL_75 4.2             //  If vBat < Low battery level, go back to sleep without water detection wakeup (Volts)
 #define TIME_UPLOAD_OTA 3600             // Time between 2 upload and OTA check (seconds)
 #define TIME_CHECK_POWER 60              // Time between 2 battery ccheck during dynamic dive. (seconds)
 #define MIN_DEPTH_CHECK_AMPLITUDE 2.0    // min depth to check amplitude of depth before ending dive. (meter)
@@ -45,7 +46,7 @@
 #define ENDING_DIVE_DEPTH_AMPLITUDE 0.15 // min depth amplitude to end dive, if depth amplitude below val, diver is out of water.
 #define SAMPLES_NUMBER_DEPTH_CHECK 30    // number of samples to calculate average depth and depth amplitude during end of dive
 #define TIMER_DEL_CREDENTIALS 10         // Time to press config button to delete all credentials
-#define TIME_CHECK_BATTERY 600000         // Time to check battery level while charging
+#define TIME_CHECK_BATTERY 600000        // Time to check battery level while charging
 
 // Water sensor parameters
 #define WATER_TOUCH_PIN TOUCH_PAD_NUM2

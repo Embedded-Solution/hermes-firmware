@@ -164,24 +164,8 @@ void TaskLedBatteryCode(void *parameter)
 
 void TaskGpsFixCode(void *parameter)
 {
-    unsigned long currentMillis = millis();
-    unsigned long previousMillis = 0;
-    pinMode(GPIO_GPS_POWER, OUTPUT);
-    digitalWrite(GPIO_GPS_POWER, LOW); // On allume le GPS
-
-    // Init sensors
     GNSS gps = GNSS();
-
-    for (;;)
-    {
-        currentMillis = millis();
-
-        if (currentMillis - previousMillis >= 1000)
-        {
-            log_d("TaskGpsFixCode, saellites :%d",gps.getSatelliteCount());
-            previousMillis = currentMillis;
-        }
-    }
+    gps.getEphemerides();
 }
 
 // Method to compare two versions.
