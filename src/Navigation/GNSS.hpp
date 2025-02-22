@@ -35,6 +35,7 @@ public:
     Position parseEnd(struct Record *records, int recordsLength, int oldTime);
     time_t getTime();
     int getEphemerides();
+    int getExtensionDay();
 
 
 private:

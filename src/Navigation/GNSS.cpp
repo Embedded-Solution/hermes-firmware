@@ -379,3 +379,88 @@ int GNSS::getEphemerides()
 
     return -3;
 }
+
+
+int GNSS::getExtensionDay()
+{
+    // 1) Activation du GPS
+    pinMode(GPIO_GPS_POWER, OUTPUT);
+    digitalWrite(GPIO_GPS_POWER, LOW);
+    pinMode(GPIO_SENSOR_POWER, OUTPUT);
+    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_LED2, OUTPUT);
+    digitalWrite(GPIO_LED2, LOW);
+
+    GPSSerial.begin(9600);
+    delay(500);
+
+    // 3) Envoi de la commande pour requêter l'Extension_Day
+    //    On termine par "\r\n" pour valider la trame NMEA.
+    GPSSerial.print("$PMTK869,0*29\r\n");
+
+    unsigned long startTime = millis();
+    const unsigned long timeout = 2000; // 2 secondes d'écoute (adapter si besoin)
+
+    String sentence;
+    int extensionDay = -1;  // Valeur par défaut (négative si pas trouvé)
+
+    // 4) Lecture des trames jusqu'au timeout
+    while (millis() - startTime < timeout)
+    {
+        while (GPSSerial.available() > 0)
+        {
+            char c = GPSSerial.read();
+            // Accumuler la trame dans 'sentence'
+            sentence += c;
+
+            // Détection fin de ligne
+            if (c == '\n')
+            {
+                // On analyse uniquement les réponses PMTK869
+                // La réponse à la requête "$PMTK869,0*29" a typiquement la forme :
+                //   $PMTK869,2,<Enabled>,<ExtensionDay>,...*CS
+                // où "2" indique la réponse à la commande de query (CmdType=0).
+                if (sentence.startsWith("$PMTK869,2,"))
+                {
+                    // On découpe pour extraire les champs
+                    // Format attendu : $PMTK869,2,<Enabled>,<ExtDay>,<...>*CS
+                    // Index     :      0         1   2          3
+                    // On veut la valeur du champ 3 => ExtensionDay
+                    String fields[10];
+                    int fieldIndex = 0;
+                    int startIndex = 0;
+
+                    for (int i = 0; i < sentence.length(); i++)
+                    {
+                        // Séparation par virgule ou par '*' (fin de data)
+                        if (sentence.charAt(i) == ',' || sentence.charAt(i) == '*')
+                        {
+                            fields[fieldIndex++] = sentence.substring(startIndex, i);
+                            startIndex = i + 1;
+                            // Si on a déjà extrait assez de champs, on peut s'arrêter
+                            if (fieldIndex >= 10) break;
+                        }
+                    }
+
+                    // Vérifier qu'on a au moins 4 champs (index 3 => extensionDay)
+                    if (fieldIndex >= 4)
+                    {
+                        // Conversion en entier
+                        extensionDay = fields[3].toInt();
+                        log_d("Extension_Day = %d", extensionDay);
+                    }
+
+                    // Dès qu'on a parsé, on peut quitter
+                    sentence = "";
+                    return extensionDay;
+                }
+
+                // Réinitialiser la sentence pour la prochaine ligne
+                sentence = "";
+            }
+        }
+    }
+
+    // 5) Si on arrive ici, on n'a pas reçu de trame PMTK869,2,... dans le temps imparti
+    return extensionDay;
+}

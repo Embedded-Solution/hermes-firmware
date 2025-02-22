@@ -165,7 +165,10 @@ void TaskLedBatteryCode(void *parameter)
 void TaskGpsFixCode(void *parameter)
 {
     GNSS gps = GNSS();
-    gps.getEphemerides();
+    int extensionDay = gps.getExtensionDay();
+    log_d("Jours Orbite : %d", extensionDay);
+    if (extensionDay < 3)
+        gps.getEphemerides();
     vTaskDelete(NULL);
 }
 
