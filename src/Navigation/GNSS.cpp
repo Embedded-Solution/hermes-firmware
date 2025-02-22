@@ -238,27 +238,30 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
                 }
             }
 
-            depth = depthSensor.getDepth();
-            currentTime = getTime();
-
-            if (currentTime != previousTime && !recordsOK) // check if time changed
+            if (millis() - start < TIME_GPS_END * 1000) // on enregistre que pendant la durée de TIME_GPS_END
             {
-                count++;
-                previousTime = currentTime; // reset previous time
-            }
+                depth = depthSensor.getDepth();
+                currentTime = getTime();
 
-            if (count >= TIME_GPS_RECORDS && !recordsOK) // if new records required and array not full
-            {
-                count = 0;
+                if (currentTime != previousTime && !recordsOK) // check if time changed
+                {
+                    count++;
+                    previousTime = currentTime; // reset previous time
+                }
 
-                // save temp and depth
-                temp = temperatureSensor.getTemp();
-                records[idRecord].Depth = depth;
-                records[idRecord].Temp = temp;
-                records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS + oldTime;
-                idRecord++;
-                if (idRecord == recordsLength)
-                    recordsOK = true;
+                if (count >= TIME_GPS_RECORDS && !recordsOK) // if new records required and array not full
+                {
+                    count = 0;
+
+                    // save temp and depth
+                    temp = temperatureSensor.getTemp();
+                    records[idRecord].Depth = depth;
+                    records[idRecord].Temp = temp;
+                    records[idRecord].Time = (idRecord + 1) * TIME_GPS_RECORDS + oldTime;
+                    idRecord++;
+                    if (idRecord == recordsLength)
+                        recordsOK = true;
+                }
             }
         }
     }
