@@ -167,6 +167,7 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
     delay(500); // TODO this needs to be more dynamic
     unsigned long start = millis();
     bool gpsOK = false, timeOK = false, recordsOK = false;
+    bool fixEphemeridesOK = true; // true au démarrage pour ne pas bloquer si aucun fix gps n'alieu dans le délai
 
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
     digitalWrite(GPIO_SENSOR_POWER, LOW);
@@ -180,12 +181,13 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
     double depth = depthSensor.getDepth();
 
     unsigned long previousTime = 0, currentTime = 0;
+    unsigned long fixEphemeridesTime = 0;
     int idRecord = 0;
     int count = 0;
 
     currentTime = getTime(); // Init Current TIme
 
-    while (millis() < start + TIME_GPS_END * 1000 && (!gpsOK || !timeOK || !recordsOK))
+    while (millis() < start + TIME_GPS_END * 1000 && (!gpsOK || !timeOK || !recordsOK) && fixEphemeridesOK)
     {
         if (GPSSerial.available() > 0 && gps.encode(GPSSerial.read()))
         {
@@ -222,9 +224,20 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
                     pos.Lat = (lat)gps.location.lat();
                     pos.Lng = (lng)gps.location.lng();
                     gpsOK = true;
+                }
+                fixEphemeridesOK = false; // passe à false pour garder le gps actif pendant au moins x minutes
+                fixEphemeridesTime = millis();
+            }
+
+            if (!fixEphemeridesOK)
+            {
+                if (millis() - fixEphemeridesTime > TIME_DIVE_EPHEMERIDES_FIX * 1000)
+                {
                     digitalWrite(GPIO_GPS_POWER, HIGH); // on éteint la led GPS
+                    fixEphemeridesOK = true;            // passe à true pour terminer la plongée si possible
                 }
             }
+
             depth = depthSensor.getDepth();
             currentTime = getTime();
 

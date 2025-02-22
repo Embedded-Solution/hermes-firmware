@@ -32,8 +32,9 @@
 #define WATER_TRIGGER 1500               // mV water detection level (0 to 3300) (lower value for pure water)
 #define TIME_GPS_START 600               // research time gps at the beginning of the dive(seconds)
 #define TIME_GPS_END 900                 // research time gps at the end of the dive (seconds)
-#define TIME_GPS_EPHEMERIDE_MAX 3600         // research ephemeride gps at the beginning of charging(seconds)
+#define TIME_GPS_EPHEMERIDE_MAX 3600     // research ephemeride gps at the beginning of charging(seconds)
 #define TIME_GPS_EPHEMERIDE_FIX 900      // fix duration to get ephemeride at the beginning of charging(seconds)
+#define TIME_DIVE_EPHEMERIDES_FIX 300    // fix duration to get ephemeride at the end of a valid dive (seconds)
 #define TIME_END_RECORDS 180             // time recording depth/temp at the end of the dive
 #define TIME_SURFACE_DETECTION 5         // Time to detect surface crossing at the beginning of the dive (seconds)
 #define BEGIN_SURFACE_DETECTION 0.05     // depth max-min to detect surface crossing at the beggining of the dive
