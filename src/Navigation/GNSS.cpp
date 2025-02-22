@@ -263,32 +263,42 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
 
 int GNSS::getEphemerides()
 {
-
     pinMode(GPIO_GPS_POWER, OUTPUT);
     digitalWrite(GPIO_GPS_POWER, LOW);
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
     digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_LED2, OUTPUT);
+    digitalWrite(GPIO_LED2, LOW);
 
     GPSSerial.begin(9600);
-    delay(500); // TODO this needs to be more dynamic
-    unsigned long start = millis();
+    delay(500);
 
-    String sentence = "";
+    unsigned long start = millis();
+    unsigned long maxDuration = TIME_GPS_EPHEMERIDE_MAX * 1000UL;
+    const unsigned long fixDuration = TIME_GPS_EPHEMERIDE_FIX * 1000UL;
+    bool ledState = HIGH;
+
+    bool fixAcquired = false;
+    unsigned long fixStartMillis = 0, blinkLedMillis = 0, currentMillis = 0;
+    String sentence;
     int nbSat = 0;
 
-    while (millis() < start + TIME_GPS_EPHEMERIDE * 1000)
+    while (millis() - start < maxDuration)
     {
         while (GPSSerial.available() > 0)
         {
             char c = GPSSerial.read();
             sentence += c;
-            // Lorsqu'une trame complète est reçue (fin de ligne)
+
+            // Détection de fin de ligne => on traite la trame complète
             if (c == '\n')
             {
+                // On cible la trame GPGGA pour extraire le nombre de satellites
                 if (sentence.startsWith("$GPGGA"))
                 {
+                    // Découpage des champs séparés par des virgules
                     int fieldIndex = 0;
-                    String fields[15]; // Il y a généralement moins de 15 champs
+                    String fields[15];
                     int startIdx = 0;
                     for (int i = 0; i < sentence.length(); i++)
                     {
@@ -298,18 +308,58 @@ int GNSS::getEphemerides()
                             startIdx = i + 1;
                         }
                     }
-                    // Vérifier qu'on a bien reçu suffisamment de champs
+
+                    // Le 9e champ (index 8) indique le nombre de satellites suivis
                     if (fieldIndex >= 8)
                     {
-                        // Le 7ème champ (index 6) correspond au nombre de satellites
                         nbSat = fields[7].toInt();
                         log_d("Nb satellites : %d", nbSat);
+
+                        // Si on détecte > 5 satellites
+                        if (nbSat > 4)
+                        {
+                            // Première fois qu'on dépasse 5 satellites ?
+                            if (!fixAcquired)
+                            {
+                                fixAcquired = true;
+                                fixStartMillis = millis();
+                                log_d("5 satellites détectés, démarrage du chrono Ephemerides.");
+                                digitalWrite(GPIO_LED2, ledState);
+                            }
+                            else
+                            {
+                                currentMillis = millis();
+                                // blink led
+                                if (currentMillis - blinkLedMillis >= 500)
+                                {
+                                    ledState = (ledState == LOW) ? HIGH : LOW;
+                                    digitalWrite(GPIO_LED2, ledState);
+                                    blinkLedMillis = currentMillis;
+                                }
+
+                                // Chrono déjà lancé : on vérifie si 15 min se sont écoulées
+                                if (currentMillis - fixStartMillis >= fixDuration)
+                                {
+                                    // On éteint le GPS après 15 minutes avec au moins 5 satellites
+                                    log_d("Chrono écoulé avec 5 satellites, extinction du GPS.");
+                                    digitalWrite(GPIO_GPS_POWER, HIGH);
+                                    digitalWrite(GPIO_SENSOR_POWER, HIGH);
+                                    return nbSat;
+                                }
+                            }
+                        }
                     }
                 }
-                // Réinitialiser le tampon pour la prochaine trame
+                // On réinitialise la chaîne pour la prochaine trame
                 sentence = "";
             }
         }
     }
+
+    // Si on sort de la boucle, c’est qu’on a atteint TIME_GPS_EPHEMERIDE sans maintenir 15 min à > 5 satellites
+    log_d("Fin de la période TIME_GPS_EPHEMERIDE sans atteindre 15 min à >5 satellites.");
+    digitalWrite(GPIO_GPS_POWER, HIGH); // Extinction du GPS
+    digitalWrite(GPIO_SENSOR_POWER, HIGH);
+
     return -3;
 }

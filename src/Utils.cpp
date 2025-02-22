@@ -166,6 +166,7 @@ void TaskGpsFixCode(void *parameter)
 {
     GNSS gps = GNSS();
     gps.getEphemerides();
+    vTaskDelete(NULL);
 }
 
 // Method to compare two versions.
