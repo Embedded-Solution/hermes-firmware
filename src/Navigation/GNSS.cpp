@@ -283,8 +283,6 @@ int GNSS::getEphemerides()
     digitalWrite(GPIO_GPS_POWER, LOW);
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
     digitalWrite(GPIO_SENSOR_POWER, LOW);
-    pinMode(GPIO_LED2, OUTPUT);
-    digitalWrite(GPIO_LED2, LOW);
 
     GPSSerial.begin(9600);
     delay(500);
@@ -292,7 +290,6 @@ int GNSS::getEphemerides()
     unsigned long start = millis();
     unsigned long maxDuration = TIME_GPS_EPHEMERIDE_MAX * 1000UL;
     const unsigned long fixDuration = TIME_GPS_EPHEMERIDE_FIX * 1000UL;
-    bool ledState = HIGH;
 
     bool fixAcquired = false;
     unsigned long fixStartMillis = 0, blinkLedMillis = 0, currentMillis = 0;
@@ -340,18 +337,10 @@ int GNSS::getEphemerides()
                                 fixAcquired = true;
                                 fixStartMillis = millis();
                                 log_d("5 satellites détectés, démarrage du chrono Ephemerides.");
-                                digitalWrite(GPIO_LED2, ledState);
                             }
                             else
                             {
                                 currentMillis = millis();
-                                // blink led
-                                if (currentMillis - blinkLedMillis >= 500)
-                                {
-                                    ledState = (ledState == LOW) ? HIGH : LOW;
-                                    digitalWrite(GPIO_LED2, ledState);
-                                    blinkLedMillis = currentMillis;
-                                }
 
                                 // Chrono déjà lancé : on vérifie si 15 min se sont écoulées
                                 if (currentMillis - fixStartMillis >= fixDuration)
@@ -388,8 +377,6 @@ int GNSS::getExtensionDay()
     digitalWrite(GPIO_GPS_POWER, LOW);
     pinMode(GPIO_SENSOR_POWER, OUTPUT);
     digitalWrite(GPIO_SENSOR_POWER, LOW);
-    pinMode(GPIO_LED2, OUTPUT);
-    digitalWrite(GPIO_LED2, LOW);
 
     GPSSerial.begin(9600);
     delay(500);
