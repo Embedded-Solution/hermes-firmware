@@ -25,17 +25,28 @@ void wake()
 {
     waterSensor.begin();
 
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
+    pinMode(GPIO_SD_EN, OUTPUT);
+    digitalWrite(GPIO_SD_EN, LOW);
     // setup gpios
     log_i("firmware version:%s\n", FIRMWARE_VERSION);
     sd.writeFile("/version.txt", String(FIRMWARE_VERSION));
 
-    pinMode(GPIO_LED1, OUTPUT);
-    pinMode(GPIO_LED2, OUTPUT);
-    pinMode(GPIO_LED3, OUTPUT);
-    pinMode(GPIO_LED4, OUTPUT);
+    pinMode(GPIO_LED1B, OUTPUT);
+    pinMode(GPIO_LED2B, OUTPUT);
+    pinMode(GPIO_LED1G, OUTPUT);
+    pinMode(GPIO_LED2G, OUTPUT);
+    pinMode(GPIO_LED1R, OUTPUT);
+    pinMode(GPIO_LED2R, OUTPUT);
+    digitalWrite(GPIO_LED1B, HIGH);
+    digitalWrite(GPIO_LED2B, HIGH);
+    digitalWrite(GPIO_LED1R, HIGH);
+    digitalWrite(GPIO_LED2R, HIGH);
+    digitalWrite(GPIO_LED1G, LOW);
+    digitalWrite(GPIO_LED2G, LOW);
+
     pinMode(GPIO_VBATT, INPUT);
-    digitalWrite(GPIO_LED3, LOW);
-    digitalWrite(GPIO_LED4, LOW);
 
     pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
     digitalWrite(GPIO_PROBE, LOW);
@@ -142,8 +153,8 @@ void dynamicDive()
         digitalWrite(GPIO_PROBE, LOW);
 
         // set gpio sensor power pin as low output to power sensors
-        pinMode(GPIO_SENSOR_POWER, OUTPUT);
-        digitalWrite(GPIO_SENSOR_POWER, LOW);
+        pinMode(GPIO_3V3_EN, OUTPUT);
+        digitalWrite(GPIO_3V3_EN, LOW);
 
         delay(10);
         Wire.begin(I2C_SDA, I2C_SCL);
@@ -232,9 +243,9 @@ void dynamicDive()
 
                     // blink led
                     if (led_on)
-                        digitalWrite(GPIO_LED4, HIGH);
+                        digitalWrite(GPIO_LED2G, HIGH);
                     else
-                        digitalWrite(GPIO_LED4, LOW);
+                        digitalWrite(GPIO_LED2G, LOW);
                     led_on = !led_on;
 
                     // check battery, back to sleep  without water detection if lowBat
@@ -354,8 +365,8 @@ void dynamicDive()
 
 void startStaticDive()
 {
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
     delay(10);
     Wire.begin(I2C_SDA, I2C_SCL);
     delay(10);
@@ -369,12 +380,12 @@ void startStaticDive()
 
     if (staticDive.Start(now(), gps.getLat(), gps.getLng(), TIME_TO_SLEEP_STATIC, diveMode) != "")
     {
-        pinMode(GPIO_LED4, OUTPUT);
+        pinMode(GPIO_LED2G, OUTPUT);
         for (int i = 0; i < 3; i++)
         {
-            digitalWrite(GPIO_LED4, HIGH);
+            digitalWrite(GPIO_LED2G, HIGH);
             delay(300);
-            digitalWrite(GPIO_LED4, LOW);
+            digitalWrite(GPIO_LED2G, LOW);
             delay(300);
         }
         double depth, temp;
@@ -392,8 +403,8 @@ void staticDiveWakeUp()
 {
     pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
     digitalWrite(GPIO_PROBE, LOW);
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
     delay(10);
     Wire.begin(I2C_SDA, I2C_SCL);
     delay(10);
@@ -454,9 +465,9 @@ void selectMode()
     {
         log_v("Static Diving");
 
-        digitalWrite(GPIO_LED4, HIGH);
+        digitalWrite(GPIO_LED2G, HIGH);
         delay(3000);
-        digitalWrite(GPIO_LED4, LOW);
+        digitalWrite(GPIO_LED2G, LOW);
     }
     else
     {
@@ -464,9 +475,9 @@ void selectMode()
 
         for (int i = 0; i < 10; i++)
         {
-            digitalWrite(GPIO_LED4, HIGH);
+            digitalWrite(GPIO_LED2G, HIGH);
             delay(150);
-            digitalWrite(GPIO_LED4, LOW);
+            digitalWrite(GPIO_LED2G, LOW);
             delay(150);
         }
     }
@@ -475,8 +486,8 @@ void selectMode()
 // 1 : underwater, 0 : air
 bool detectSurface(float levelSurfaceDetection)
 {
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
     delay(10);
     Wire.begin(I2C_SDA, I2C_SCL);
     delay(10);

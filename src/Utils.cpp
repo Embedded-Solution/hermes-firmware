@@ -139,25 +139,25 @@ void TaskLedBatteryCode(void *parameter)
 
         if (batteryLevel < BATTERY_LEVEL_25)
         {
-            digitalWrite(GPIO_LED4, LOW); // led diving off
+            digitalWrite(GPIO_LED2G, LOW); // led diving off
             if (currentMillis - previousMillisLed >= 500)
             {
                 ledState = (ledState == LOW) ? HIGH : LOW;
-                digitalWrite(GPIO_LED1, ledState);
+                digitalWrite(GPIO_LED1B, ledState);
                 previousMillisLed = currentMillis;
             }
         }
 
         else if (batteryLevel > BATTERY_LEVEL_75)
         {
-            digitalWrite(GPIO_LED1, LOW);  // led error off
-            digitalWrite(GPIO_LED4, HIGH); // led diving on
+            digitalWrite(GPIO_LED1B, LOW);  // led error off
+            digitalWrite(GPIO_LED2G, HIGH); // led diving on
         }
         else
         {
             // all leds off
-            digitalWrite(GPIO_LED1, LOW);
-            digitalWrite(GPIO_LED4, LOW);
+            digitalWrite(GPIO_LED1B, LOW);
+            digitalWrite(GPIO_LED2G, LOW);
         }
     }
 }

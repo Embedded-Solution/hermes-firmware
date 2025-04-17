@@ -17,7 +17,7 @@ void WifiManager::startPortal(SecureDigital sd)
   // acConfig.portalTimeout = 15 * 60 * 1000;
   acConfig.title = "Remora Config";
   acConfig.ticker = true;
-  acConfig.tickerPort = GPIO_LED3;
+  acConfig.tickerPort = GPIO_LED1G;
   acConfig.tickerOn = LOW;
   acConfig.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_OPENSSIDS | AC_MENUITEM_DELETESSID;
 
@@ -61,8 +61,8 @@ void WifiManager::startPortal(SecureDigital sd)
   {
     if (millis() - previous > TIME_UPLOAD_OTA * 1000) // retry upload and ota after a while
     {
-      pinMode(GPIO_LED2, OUTPUT);
-      digitalWrite(GPIO_LED2, HIGH);
+      pinMode(GPIO_LED2B, OUTPUT);
+      digitalWrite(GPIO_LED2B, HIGH);
 
       if (uploadDives(sd) != SUCCESS)
         log_e("Error after upload");
@@ -71,7 +71,7 @@ void WifiManager::startPortal(SecureDigital sd)
       if (ota(sd) != SUCCESS)
         log_e("Error after OTA");
 
-      digitalWrite(GPIO_LED2, LOW);
+      digitalWrite(GPIO_LED2B, LOW);
       log_v("OTA finished, waiting for usb disconnection");
 
       previous = millis(); // reset upload and ota retry timer
@@ -131,15 +131,15 @@ bool WifiManager::checkDeleteCredentials(void)
     // blink leds
     for (int i = 0; i < 5; i++)
     {
-      digitalWrite(GPIO_LED1, HIGH);
-      digitalWrite(GPIO_LED2, HIGH);
-      digitalWrite(GPIO_LED3, HIGH);
-      digitalWrite(GPIO_LED4, HIGH);
+      digitalWrite(GPIO_LED1B, HIGH);
+      digitalWrite(GPIO_LED2B, HIGH);
+      digitalWrite(GPIO_LED1G, HIGH);
+      digitalWrite(GPIO_LED2G, HIGH);
       delay(300);
-      digitalWrite(GPIO_LED1, LOW);
-      digitalWrite(GPIO_LED2, LOW);
-      digitalWrite(GPIO_LED3, LOW);
-      digitalWrite(GPIO_LED4, LOW);
+      digitalWrite(GPIO_LED1B, LOW);
+      digitalWrite(GPIO_LED2B, LOW);
+      digitalWrite(GPIO_LED1G, LOW);
+      digitalWrite(GPIO_LED2G, LOW);
       delay(300);
     }
 

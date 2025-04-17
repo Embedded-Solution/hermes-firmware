@@ -5,6 +5,7 @@
 #include <FS.h>
 
 #include <Storage/Storage.hpp>
+#include <hal/remora-hal.h>
 
 using namespace std;
 
@@ -13,6 +14,12 @@ class SecureDigital : public Storage
 public:
     SecureDigital()
     {
+
+        pinMode(GPIO_3V3_EN, OUTPUT);
+        digitalWrite(GPIO_3V3_EN, LOW);
+        pinMode(GPIO_SD_EN, OUTPUT);
+        digitalWrite(GPIO_SD_EN, LOW);
+
         SPI.begin(18, 19, 23);
         delay(10);
         if (!SD.begin(5))

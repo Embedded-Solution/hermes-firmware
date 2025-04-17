@@ -24,8 +24,8 @@ time_t GNSS::getTime()
     char nextData; // char received from gps
     bool timeReady = false;
 
-    pinMode(GPIO_GPS_POWER, OUTPUT);
-    digitalWrite(GPIO_GPS_POWER, LOW);
+    pinMode(GPIO_GPS_EN, OUTPUT);
+    digitalWrite(GPIO_GPS_EN, LOW);
 
     while (timeReady == false)
     {
@@ -60,17 +60,17 @@ time_t GNSS::getTime()
 Position GNSS::parseStart(struct Record *records)
 {
     Position pos = {0};
-    digitalWrite(GPIO_LED2, HIGH);
-    pinMode(GPIO_GPS_POWER, OUTPUT);
-    digitalWrite(GPIO_GPS_POWER, LOW);
+    digitalWrite(GPIO_LED2B, HIGH);
+    pinMode(GPIO_GPS_EN, OUTPUT);
+    digitalWrite(GPIO_GPS_EN, LOW);
 
     GPSSerial.begin(9600);
     delay(500); // TODO this needs to be more dynamic
     unsigned long start = millis();
     bool gpsOK = false, timeOK = false;
 
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
     delay(10);
     Wire.begin(I2C_SDA, I2C_SCL);
     delay(10);
@@ -143,7 +143,7 @@ Position GNSS::parseStart(struct Record *records)
             }
         }
     }
-    digitalWrite(GPIO_LED2, LOW);                       // turn syn led off when gps connected
+    digitalWrite(GPIO_LED2B, LOW);                       // turn syn led off when gps connected
     pos.dateTime = now() - idRecord * TIME_GPS_RECORDS; // start datetime is before the gps search so we remove the duration of the gps search.
     log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
@@ -159,9 +159,9 @@ Position GNSS::parseStart(struct Record *records)
 Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
 {
     Position pos = {0};
-    digitalWrite(GPIO_LED2, HIGH);
-    pinMode(GPIO_GPS_POWER, OUTPUT);
-    digitalWrite(GPIO_GPS_POWER, LOW);
+    digitalWrite(GPIO_LED2B, HIGH);
+    pinMode(GPIO_GPS_EN, OUTPUT);
+    digitalWrite(GPIO_GPS_EN, LOW);
 
     GPSSerial.begin(9600);
     delay(500); // TODO this needs to be more dynamic
@@ -169,8 +169,8 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
     bool gpsOK = false, timeOK = false, recordsOK = false;
     bool fixEphemeridesOK = true; // true au démarrage pour ne pas bloquer si aucun fix gps n'alieu dans le délai
 
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
     delay(10);
     Wire.begin(I2C_SDA, I2C_SCL);
     delay(10);
@@ -233,7 +233,7 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
             {
                 if (millis() - fixEphemeridesTime > TIME_DIVE_EPHEMERIDES_FIX * 1000)
                 {
-                    digitalWrite(GPIO_GPS_POWER, HIGH); // on éteint la led GPS
+                    digitalWrite(GPIO_GPS_EN, HIGH); // on éteint la led GPS
                     fixEphemeridesOK = true;            // passe à true pour terminer la plongée si possible
                 }
             }
@@ -265,7 +265,7 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
             }
         }
     }
-    digitalWrite(GPIO_LED2, LOW); // turn syn led off when gps connected
+    digitalWrite(GPIO_LED2B, LOW); // turn syn led off when gps connected
     log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
     if (timeOK && gpsOK) // save if datetime and position is ok
@@ -279,10 +279,10 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
 
 int GNSS::getEphemerides()
 {
-    pinMode(GPIO_GPS_POWER, OUTPUT);
-    digitalWrite(GPIO_GPS_POWER, LOW);
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_GPS_EN, OUTPUT);
+    digitalWrite(GPIO_GPS_EN, LOW);
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
 
     GPSSerial.begin(9600);
     delay(500);
@@ -347,8 +347,8 @@ int GNSS::getEphemerides()
                                 {
                                     // On éteint le GPS après 15 minutes avec au moins 5 satellites
                                     log_d("Chrono écoulé avec 5 satellites, extinction du GPS.");
-                                    digitalWrite(GPIO_GPS_POWER, HIGH);
-                                    digitalWrite(GPIO_SENSOR_POWER, HIGH);
+                                    digitalWrite(GPIO_GPS_EN, HIGH);
+                                    digitalWrite(GPIO_3V3_EN, HIGH);
                                     return nbSat;
                                 }
                             }
@@ -363,8 +363,8 @@ int GNSS::getEphemerides()
 
     // Si on sort de la boucle, c’est qu’on a atteint TIME_GPS_EPHEMERIDE sans maintenir 15 min à > 5 satellites
     log_d("Fin de la période TIME_GPS_EPHEMERIDE sans atteindre 15 min à >5 satellites.");
-    digitalWrite(GPIO_GPS_POWER, HIGH); // Extinction du GPS
-    digitalWrite(GPIO_SENSOR_POWER, HIGH);
+    digitalWrite(GPIO_GPS_EN, HIGH); // Extinction du GPS
+    digitalWrite(GPIO_3V3_EN, HIGH);
 
     return -3;
 }
@@ -373,10 +373,10 @@ int GNSS::getEphemerides()
 int GNSS::getExtensionDay()
 {
     // 1) Activation du GPS
-    pinMode(GPIO_GPS_POWER, OUTPUT);
-    digitalWrite(GPIO_GPS_POWER, LOW);
-    pinMode(GPIO_SENSOR_POWER, OUTPUT);
-    digitalWrite(GPIO_SENSOR_POWER, LOW);
+    pinMode(GPIO_GPS_EN, OUTPUT);
+    digitalWrite(GPIO_GPS_EN, LOW);
+    pinMode(GPIO_3V3_EN, OUTPUT);
+    digitalWrite(GPIO_3V3_EN, LOW);
 
     GPSSerial.begin(9600);
     delay(500);
