@@ -60,7 +60,7 @@ time_t GNSS::getTime()
 Position GNSS::parseStart(struct Record *records)
 {
     Position pos = {0};
-    digitalWrite(GPIO_LED2B, HIGH);
+    digitalWrite(GPIO_LED2B, LOW);
     pinMode(GPIO_GPS_EN, OUTPUT);
     digitalWrite(GPIO_GPS_EN, LOW);
 
@@ -143,7 +143,7 @@ Position GNSS::parseStart(struct Record *records)
             }
         }
     }
-    digitalWrite(GPIO_LED2B, LOW);                       // turn syn led off when gps connected
+    digitalWrite(GPIO_LED2B, HIGH);                       // turn syn led off when gps connected
     pos.dateTime = now() - idRecord * TIME_GPS_RECORDS; // start datetime is before the gps search so we remove the duration of the gps search.
     log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
@@ -159,7 +159,7 @@ Position GNSS::parseStart(struct Record *records)
 Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
 {
     Position pos = {0};
-    digitalWrite(GPIO_LED2B, HIGH);
+    digitalWrite(GPIO_LED2B, LOW);
     pinMode(GPIO_GPS_EN, OUTPUT);
     digitalWrite(GPIO_GPS_EN, LOW);
 
@@ -265,7 +265,7 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
             }
         }
     }
-    digitalWrite(GPIO_LED2B, LOW); // turn syn led off when gps connected
+    digitalWrite(GPIO_LED2B, HIGH); // turn syn led off when gps connected
     log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
     if (timeOK && gpsOK) // save if datetime and position is ok

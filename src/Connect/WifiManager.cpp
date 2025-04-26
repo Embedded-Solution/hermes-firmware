@@ -17,7 +17,7 @@ void WifiManager::startPortal(SecureDigital sd)
   // acConfig.portalTimeout = 15 * 60 * 1000;
   acConfig.title = "Remora Config";
   acConfig.ticker = true;
-  acConfig.tickerPort = GPIO_LED1G;
+  acConfig.tickerPort = GPIO_LED2B;
   acConfig.tickerOn = LOW;
   acConfig.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_OPENSSIDS | AC_MENUITEM_DELETESSID;
 
@@ -33,7 +33,6 @@ void WifiManager::startPortal(SecureDigital sd)
 
   TaskHandle_t TaskGpsFix;
   xTaskCreatePinnedToCore(TaskGpsFixCode, "TaskGpsFix", 10000, NULL, 0, &TaskGpsFix, 0);
-
 
   Portal.begin();
   if (MDNS.begin("remora"))
@@ -131,15 +130,11 @@ bool WifiManager::checkDeleteCredentials(void)
     // blink leds
     for (int i = 0; i < 5; i++)
     {
-      digitalWrite(GPIO_LED1B, HIGH);
-      digitalWrite(GPIO_LED2B, HIGH);
-      digitalWrite(GPIO_LED1G, HIGH);
-      digitalWrite(GPIO_LED2G, HIGH);
-      delay(300);
       digitalWrite(GPIO_LED1B, LOW);
       digitalWrite(GPIO_LED2B, LOW);
-      digitalWrite(GPIO_LED1G, LOW);
-      digitalWrite(GPIO_LED2G, LOW);
+      delay(300);
+      digitalWrite(GPIO_LED1B, HIGH);
+      digitalWrite(GPIO_LED2B, HIGH);
       delay(300);
     }
 

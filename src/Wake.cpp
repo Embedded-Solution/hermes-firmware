@@ -23,9 +23,9 @@ void IRAM_ATTR ISR()
 
 void wake()
 {
-      // Afficher la mémoire libre au démarrage
-  Serial.print("Mémoire libre (heap) : ");
-  Serial.println(esp_get_free_heap_size());
+    // Afficher la mémoire libre au démarrage
+    Serial.print("Mémoire libre (heap) : ");
+    Serial.println(esp_get_free_heap_size());
     waterSensor.begin();
 
     pinMode(GPIO_3V3_EN, OUTPUT);
@@ -46,8 +46,8 @@ void wake()
     digitalWrite(GPIO_LED2B, HIGH);
     digitalWrite(GPIO_LED1R, HIGH);
     digitalWrite(GPIO_LED2R, HIGH);
-    digitalWrite(GPIO_LED1G, LOW);
-    digitalWrite(GPIO_LED2G, LOW);
+    digitalWrite(GPIO_LED1G, HIGH);
+    digitalWrite(GPIO_LED2G, HIGH);
 
     pinMode(GPIO_VBATT, INPUT);
 
@@ -58,7 +58,16 @@ void wake()
 
     // check if sd card is ready, if not go back to sleep without water detection wake up
     if (sd.ready() == false)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            digitalWrite(GPIO_LED1R, HIGH);
+            delay(300);
+            digitalWrite(GPIO_LED1R, LOW);
+            delay(300);
+        }
         sleep(SDCARD_ERROR_SLEEP);
+    }
 
     // check wake up reason
     uint64_t wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -141,6 +150,13 @@ void dynamicDive()
     digitalWrite(GPIO_PROBE, LOW);
     pinMode(GPIO_WATER, OUTPUT);
     digitalWrite(GPIO_WATER, LOW);
+
+    digitalWrite(GPIO_LED1B, HIGH);
+    digitalWrite(GPIO_LED2B, HIGH);
+    digitalWrite(GPIO_LED1R, HIGH);
+    digitalWrite(GPIO_LED2R, HIGH);
+    digitalWrite(GPIO_LED1G, HIGH);
+    digitalWrite(GPIO_LED2G, HIGH);
 
     // detect if the wake up is because of diving or not
     // If not, do not start dynamic dive
@@ -469,21 +485,17 @@ void selectMode()
     {
         log_v("Static Diving");
 
-        digitalWrite(GPIO_LED2G, HIGH);
+        digitalWrite(GPIO_LED2B, LOW);
         delay(3000);
-        digitalWrite(GPIO_LED2G, LOW);
+        digitalWrite(GPIO_LED2B, HIGH);
     }
     else
     {
         log_v("Dynamic diving");
 
-        for (int i = 0; i < 10; i++)
-        {
-            digitalWrite(GPIO_LED2G, HIGH);
-            delay(150);
-            digitalWrite(GPIO_LED2G, LOW);
-            delay(150);
-        }
+        digitalWrite(GPIO_LED2G, LOW);
+        delay(3000);
+        digitalWrite(GPIO_LED2G, HIGH);
     }
 }
 
