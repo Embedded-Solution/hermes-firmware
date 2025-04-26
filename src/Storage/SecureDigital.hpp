@@ -15,10 +15,7 @@ public:
     SecureDigital()
     {
 
-        pinMode(GPIO_3V3_EN, OUTPUT);
-        digitalWrite(GPIO_3V3_EN, LOW);
-        pinMode(GPIO_SD_EN, OUTPUT);
-        digitalWrite(GPIO_SD_EN, LOW);
+        powerSDcard();
 
         SPI.begin(18, 19, 23);
         delay(10);
@@ -64,6 +61,8 @@ public:
 
     int makeDirectory(String path)
     {
+        powerSDcard();
+
         if (SD.mkdir(path.c_str()))
         {
             return 0;
@@ -76,6 +75,8 @@ public:
 
     int checkDirectory(String path)
     {
+        powerSDcard();
+
         if (SD.exists(path.c_str()))
         {
             return 0;
@@ -88,6 +89,8 @@ public:
 
     int removeDirectory(String path)
     {
+        powerSDcard();
+
         if (SD.rmdir(path.c_str()))
         {
             return 0;
@@ -100,6 +103,8 @@ public:
 
     String readFile(String path)
     {
+        powerSDcard();
+
         String data;
         File file = SD.open(path);
         if (!file)
@@ -119,6 +124,8 @@ public:
 
     int writeFile(String path, String data)
     {
+        powerSDcard();
+
         File file = SD.open(path, FILE_WRITE);
         if (!file)
         {
@@ -139,6 +146,8 @@ public:
 
     int appendFile(String path, String data)
     {
+        powerSDcard();
+
         File file = SD.open(path, FILE_APPEND);
         if (!file)
         {
@@ -159,6 +168,8 @@ public:
 
     int renameFile(String pathA, String pathB)
     {
+        powerSDcard();
+
         if (SD.rename(pathA, pathB))
         {
             return 0;
@@ -171,6 +182,8 @@ public:
 
     int deleteFile(String path)
     {
+        powerSDcard();
+
         if (SD.remove(path))
         {
             return 0;
@@ -183,6 +196,8 @@ public:
 
     int findFile(String path)
     {
+        powerSDcard();
+
         if (SD.exists(path))
         {
             return 0;
@@ -195,6 +210,8 @@ public:
 
     int touchFile(String path)
     {
+        powerSDcard();
+
         if (SD.exists(path))
         {
             return 0;
@@ -209,6 +226,13 @@ public:
 
 private:
     bool m_ready = false;
+    void powerSDcard()
+    {
+        pinMode(GPIO_3V3_EN, OUTPUT);
+        digitalWrite(GPIO_3V3_EN, LOW);
+        pinMode(GPIO_SD_EN, OUTPUT);
+        digitalWrite(GPIO_SD_EN, LOW);
+    }
 };
 
 #endif

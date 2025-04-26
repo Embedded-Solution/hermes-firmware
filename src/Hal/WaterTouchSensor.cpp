@@ -12,8 +12,11 @@ WaterTouchSensor::WaterTouchSensor(uint8_t pin, uint16_t threshold)
 
 void WaterTouchSensor::begin()
 {
-    _preferences.begin("waterSensor", false);
+    log_i("STARTING WATER SENSOR");
+    _preferences.begin("waterSensor", false,"nvs");
     // loadFromMemory();
+    log_i("WATER SENSOR STARTED");
+
 }
 
 bool WaterTouchSensor::isWaterDetected()

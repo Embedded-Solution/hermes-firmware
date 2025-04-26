@@ -23,6 +23,9 @@ void IRAM_ATTR ISR()
 
 void wake()
 {
+      // Afficher la mémoire libre au démarrage
+  Serial.print("Mémoire libre (heap) : ");
+  Serial.println(esp_get_free_heap_size());
     waterSensor.begin();
 
     pinMode(GPIO_3V3_EN, OUTPUT);
@@ -108,6 +111,7 @@ void wake()
                     // While wifi not set, shutdown if usb is disconnected
                     attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
 
+                    log_d("START PORTAL");
                     wm.startPortal(sd);
                 }
                 else if (i == GPIO_CONFIG) // button config (switch between diving modes)
