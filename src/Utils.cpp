@@ -139,7 +139,7 @@ void TaskLedBatteryCode(void *parameter)
 
         if (batteryLevel < BATTERY_LEVEL_25)
         {
-            digitalWrite(GPIO_LED1G, HIGH); 
+            digitalWrite(GPIO_LED1G, HIGH);
             if (currentMillis - previousMillisLed >= 500)
             {
                 ledState = (ledState == LOW) ? HIGH : LOW;
@@ -150,14 +150,20 @@ void TaskLedBatteryCode(void *parameter)
 
         else if (batteryLevel > BATTERY_LEVEL_75)
         {
-            digitalWrite(GPIO_LED1G, LOW);  
-            digitalWrite(GPIO_LED1R, HIGH); 
+            digitalWrite(GPIO_LED1G, LOW);
+            digitalWrite(GPIO_LED1R, HIGH);
         }
         else
         {
-            // all leds off
-            digitalWrite(GPIO_LED1G, HIGH);
-            digitalWrite(GPIO_LED1R, HIGH);
+            // blink yellow
+            if (currentMillis - previousMillisLed >= 500)
+            {
+                ledState = (ledState == LOW) ? HIGH : LOW;
+                digitalWrite(GPIO_LED1R, ledState);
+                digitalWrite(GPIO_LED1G, ledState);
+
+                previousMillisLed = currentMillis;
+            }
         }
     }
 }

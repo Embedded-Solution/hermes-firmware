@@ -12,10 +12,10 @@
 #undef TAG
 #define TAG (char *)"REMORA"
 #endif
-// #define MODE_DEBUG
+//  #define MODE_DEBUG
 //  #define SERIAL1_DEBUG_OUTPUT
 //  #define DELETE_UNVALID_DIVES
-// #define LOG_ON_SD_CARD
+#define LOG_ON_SD_CARD
 #define LOG_LEVEL ESP_LOG_DEBUG
 
 // Dives parameters
@@ -62,5 +62,11 @@
 // Upload parameters
 const String indexPath = "/index.json";
 #define POST_RETRY 3 // number of post attemp before skip.
+
+
+
+
+#define LED_BATT_STACK_SIZE  ( 4*1024 / sizeof(StackType_t) )  // 4 Ko de pile
+#define GPS_FIX_STACK_SIZE   ( 4*1024 / sizeof(StackType_t) )  // 4 Ko de pile
 
 #endif

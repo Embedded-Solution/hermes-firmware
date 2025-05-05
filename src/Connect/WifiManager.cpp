@@ -28,11 +28,16 @@ void WifiManager::startPortal(SecureDigital sd)
   SPIFFS.end();
 
   esp_task_wdt_init(60, false); // 60 secondes, false pour désactiver le WDT pour toutes les tâches
+
   TaskHandle_t TaskLedBattery;
-  xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
+  xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery",
+                          LED_BATT_STACK_SIZE,
+                          NULL, 1, &TaskLedBattery, 0);
 
   TaskHandle_t TaskGpsFix;
-  xTaskCreatePinnedToCore(TaskGpsFixCode, "TaskGpsFix", 10000, NULL, 0, &TaskGpsFix, 0);
+  xTaskCreatePinnedToCore(TaskGpsFixCode, "TaskGpsFix",
+                          GPS_FIX_STACK_SIZE,
+                          NULL, 1, &TaskGpsFix, 1);
 
   Portal.begin();
   if (MDNS.begin("remora"))
