@@ -7,6 +7,7 @@
 #include <hal/remora-hal.h>
 #include <Storage/SecureDigital.hpp>
 #include <Navigation/GNSS.hpp>
+#include "driver/touch_pad.h"      
 
 String remoraID();
 void sleep(int mode = 0);

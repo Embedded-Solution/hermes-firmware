@@ -1,4 +1,6 @@
 #include <Utils.hpp>
+#include <esp_task_wdt.h> // Nécessaire pour gérer le Task Watchdog Timer (TWDT)
+
 // INTERRUPTION TS
 // INTERRUPTION TOUCH SENSOR
 static void ts_intr(void *arg)
@@ -122,7 +124,11 @@ float readBattery()
 
 void TaskLedBatteryCode(void *parameter)
 {
-    unsigned long previousMillisLed = 0, previousMillisBattery = 0;
+    // 1) register this task with the TWDT (default timeout ~5s)
+    esp_task_wdt_add(NULL);
+
+    unsigned long previousMillisLed = 0;
+    unsigned long previousMillisBattery = 0;
     unsigned long currentMillis = 0;
     bool ledState = HIGH;
     float batteryLevel = readBattery();
@@ -142,7 +148,7 @@ void TaskLedBatteryCode(void *parameter)
             digitalWrite(GPIO_LED1G, HIGH);
             if (currentMillis - previousMillisLed >= 500)
             {
-                ledState = (ledState == LOW) ? HIGH : LOW;
+                ledState = !ledState;
                 digitalWrite(GPIO_LED1R, ledState);
                 previousMillisLed = currentMillis;
             }
@@ -155,16 +161,21 @@ void TaskLedBatteryCode(void *parameter)
         }
         else
         {
-            // blink yellow
             if (currentMillis - previousMillisLed >= 500)
             {
-                ledState = (ledState == LOW) ? HIGH : LOW;
+                ledState = !ledState;
                 digitalWrite(GPIO_LED1R, ledState);
                 digitalWrite(GPIO_LED1G, ledState);
-
                 previousMillisLed = currentMillis;
             }
         }
+
+        // 2) feed the watchdog for this task
+        esp_task_wdt_reset();
+
+        // 3) yield so idle tasks can run (and reset their watchdog)
+        //    a short delay (e.g. 10 ms) is plenty
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 

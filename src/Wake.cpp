@@ -250,11 +250,8 @@ void dynamicDive()
                             log_d("Valid Dive, reset counter end dive");
                             validDive = true; // if minDepth reached, dive is valid
                             count = 0;        // reset count before detect end of dive
+                            log_d("UNDERWATER DETECTION : %d", waterSensor.read());
                         }
-                    }
-                    else
-                    {
-                        log_d("UNDERWATER DETECTION : %d", waterSensor.read());
                     }
 
                     // Save record
@@ -277,7 +274,7 @@ void dynamicDive()
                             endDive = true;
                             log_d("LOW BATT DETECTED");
                         }
-
+#ifndef MODE_DEBUG
                         pinMode(GPIO_VCC_SENSE, INPUT);
                         if (digitalRead(GPIO_VCC_SENSE))
                         {
@@ -286,6 +283,7 @@ void dynamicDive()
                             log_d("GPIO VCC SENSE DETECTED");
                         }
                         pinMode(GPIO_VCC_SENSE, OUTPUT);
+#endif
                     }
 
                     /////////////////// Depth Running Amplitude & average to detect end of dive/////////////

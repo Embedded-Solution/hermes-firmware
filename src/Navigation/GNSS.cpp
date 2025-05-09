@@ -292,7 +292,7 @@ int GNSS::getEphemerides()
     const unsigned long fixDuration = TIME_GPS_EPHEMERIDE_FIX * 1000UL;
 
     bool fixAcquired = false;
-    unsigned long fixStartMillis = 0, blinkLedMillis = 0, currentMillis = 0;
+    unsigned long fixStartMillis = 0, currentMillis = 0;
     String sentence;
     int nbSat = 0;
 
