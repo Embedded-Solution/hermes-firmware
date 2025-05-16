@@ -40,14 +40,6 @@ String remoraID()
 
 void sleep(int mode)
 {
-    SecureDigital sd;
-
-    String path = "/sleep.txt";
-    if (sd.findFile(path) == -1)
-        sd.writeFile(path, String(mode));
-    else
-        sd.appendFile(path, String(mode));
-
     uint64_t wakeMask;
     switch (mode)
     {
@@ -62,19 +54,6 @@ void sleep(int mode)
 #endif
         esp_sleep_enable_ext1_wakeup(wakeMask, ESP_EXT1_WAKEUP_ANY_HIGH);
 
-        break;
-
-        // if static diving, wake up with timer or config button
-    case SLEEP_WITH_TIMER:
-        log_v("SLEEP WITH TIMER");
-        pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
-        digitalWrite(GPIO_PROBE, LOW);
-        gpio_hold_en(GPIO_NUM_33);
-        gpio_deep_sleep_hold_en();
-
-        wakeMask = 1ULL << GPIO_CONFIG;
-        esp_sleep_enable_ext1_wakeup(wakeMask, ESP_EXT1_WAKEUP_ANY_HIGH);
-        esp_sleep_enable_timer_wakeup((TIME_TO_SLEEP_STATIC * 1000 - OFFSET_SLEEP_STATIC) * 1000);
         break;
 
         // if sd card error sleep without water detection

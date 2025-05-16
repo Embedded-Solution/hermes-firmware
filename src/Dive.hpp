@@ -40,16 +40,14 @@ public:
     Dive();
     Dive(Storage *s);
 
-    String Start(long time, lat lat, lng lng, int freq, bool mode);
-    String End(long time, lat lat, lng lng, bool mode);
+    String Start(long time, lat lat, lng lng, int freq);
+    String End(long time, lat lat, lng lng);
 
     int NewRecord(Record r);
-    int NewRecordStatic(Record r);
 
     void saveId(String ID);
     void deleteID(String ID);
 
-    void sendJson();
     String getID();
     int checkIndex();
     void saveUploadID(String ID, long bddID);
@@ -75,9 +73,8 @@ private:
     String createID(long time);
 
     int writeMetadataEnd(long time, double lat, double lng);
-    int writeMetadataStart(long time, double lat, double lng, int freq, bool mode);
+    int writeMetadataStart(long time, double lat, double lng, int freq);
     int writeSilo(bool last = false, int currentRecord = 0);
-    int writeStaticRecord();
 };
 
 #endif

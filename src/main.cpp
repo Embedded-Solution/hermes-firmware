@@ -23,7 +23,8 @@ void setup()
 {
     Serial.begin(115200);
     delay(100);
-
+    UBaseType_t water = uxTaskGetStackHighWaterMark(NULL);
+    Serial.printf("loopTask high water mark: %u bytes\n", water * sizeof(StackType_t));
 #ifdef LOG_ON_SD_CARD
     if (SD.begin())
     {

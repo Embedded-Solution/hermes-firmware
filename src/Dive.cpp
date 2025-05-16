@@ -1,9 +1,8 @@
 #include <Dive.hpp>
 #include <Storage/Storage.hpp>
+extern "C" UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t);
 
 RTC_DATA_ATTR char savedID[100];
-RTC_DATA_ATTR int staticCurrentRecords;
-RTC_DATA_ATTR int staticOrder;
 
 Dive::Dive(void) {}
 
@@ -28,8 +27,6 @@ void Dive::init()
     metadata.startLng = 0;
     metadata.endLat = 0;
     metadata.endLng = 0;
-    staticCurrentRecords = 0;
-    staticOrder = 0;
 }
 
 void Dive::resetRecords()
@@ -38,14 +35,14 @@ void Dive::resetRecords()
     diveRecords = new Record[siloRecordSize];
 }
 
-String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
+String Dive::Start(long time, lat lat, lng lng, int freq)
 {
     init();
     ID = createID(time);
     saveId(ID);
     log_d("Start dynamic dive, ID = %s", ID.c_str());
     diveRecords = new Record[siloRecordSize];
-    if (writeMetadataStart(time, lat, lng, freq, mode) == -1)
+    if (writeMetadataStart(time, lat, lng, freq) == -1)
     {
         return "";
     }
@@ -57,7 +54,7 @@ String Dive::Start(long time, lat lat, lng lng, int freq, bool mode)
     return ID;
 }
 
-String Dive::End(long time, lat lat, lng lng, bool mode)
+String Dive::End(long time, lat lat, lng lng)
 {
     log_d("End dive, ID = %s", ID.c_str());
 
@@ -66,8 +63,12 @@ String Dive::End(long time, lat lat, lng lng, bool mode)
     storage->appendFile(path, (String)readBattery());
     /////////////////////////////////////////////////////////////
 
-    if (mode == 0) // write partial silo if dynamic ode
-        writeSilo(true, currentRecords);
+    // Mesure ici, après le dive
+    UBaseType_t high = uxTaskGetStackHighWaterMark(NULL);
+    size_t bytesFree = high * sizeof(StackType_t);
+    Serial.printf("Après dynamicDive → pile libre : %u bytes\n", bytesFree);
+
+    writeSilo(true, currentRecords);
 
     if (writeMetadataEnd(time, lat, lng) == -1)
     {
@@ -92,19 +93,6 @@ int Dive::NewRecord(Record r)
         resetRecords();
         currentRecords = 0;
     }
-    return 0;
-}
-
-int Dive::NewRecordStatic(Record r)
-{
-    diveRecords[0] = r;
-
-    if (writeStaticRecord() == -1)
-    {
-        log_e("Error saving silo");
-        return -1;
-    }
-
     return 0;
 }
 
@@ -134,63 +122,7 @@ int Dive::writeSilo(bool last, int currentRecord)
     return storage->writeFile(path, buffer);
 }
 
-int Dive::writeStaticRecord()
-{
-    ID = getID();
-
-    String path = "/" + ID + "/silo" + String(staticOrder) + ".json";
-
-    log_v("Current Records = %d", staticCurrentRecords);
-    log_v("Order = %d", staticOrder);
-
-    staticCurrentRecords++;
-    // Change silo number if enough records
-    if (staticCurrentRecords == siloRecordSize)
-    {
-        staticOrder++;
-        staticCurrentRecords = 0;
-    }
-
-    DynamicJsonDocument jsonSilo(siloByteSize);
-
-    // this should only happen to a new dive record
-    if (storage->findFile(path) == -1)
-    {
-        jsonSilo["diveId"] = ID;
-
-        JsonArray records = jsonSilo.createNestedArray("records");
-
-        JsonArray record = records.createNestedArray();
-        record.add(diveRecords[0].Temp);
-        record.add(diveRecords[0].Depth);
-        record.add(diveRecords[0].Time);
-    }
-    else
-    {
-        String records = storage->readFile(path);
-        if (records == "")
-        {
-            log_e("Could not read previous ID records file");
-            return -1;
-        }
-        else
-        {
-            deserializeJson(jsonSilo, records);
-
-            JsonArray record = jsonSilo["records"].createNestedArray();
-            record.add(diveRecords[0].Temp);
-            record.add(diveRecords[0].Depth);
-            record.add(diveRecords[0].Time);
-        }
-    }
-
-    String buffer;
-    serializeJson(jsonSilo, buffer);
-
-    return storage->writeFile(path, buffer);
-}
-
-int Dive::writeMetadataStart(long time, double lat, double lng, int freq, bool mode)
+int Dive::writeMetadataStart(long time, double lat, double lng, int freq)
 {
     StaticJsonDocument<1024> mdata;
     storage->makeDirectory("/" + ID);
@@ -199,7 +131,7 @@ int Dive::writeMetadataStart(long time, double lat, double lng, int freq, bool m
     mdata["deviceId"] = remoraID();
     mdata["diveId"] = ID;
     char buf[50];
-    sprintf(buf, "%s - %s", (mode == 1 ? "Static" : "Dynamic"), FIRMWARE_VERSION);
+    sprintf(buf, "%s - %s", "Dynamic", FIRMWARE_VERSION);
     mdata["mode"] = buf;
     mdata["startTime"] = time;
     mdata["startLat"] = lat;
@@ -299,6 +231,11 @@ int Dive::updateIndex(String updatedID)
 
         return storage->writeFile(indexPath, buffer);
     }
+
+    // Mesure ici, après le dive
+    UBaseType_t high = uxTaskGetStackHighWaterMark(NULL);
+    size_t bytesFree = high * sizeof(StackType_t);
+    Serial.printf("Après dynamicDive → pile libre : %u bytes\n", bytesFree);
 }
 
 int Dive::deleteIndex(String deletedID)

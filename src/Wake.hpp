@@ -17,14 +17,8 @@
 #include <Settings.hpp>
 #include <Hal/WaterTouchSensor.h>
 
-#define DYNAMIC_MODE 0
-#define STATIC_MODE 1
-
 void wake();
 void dynamicDive();
-void startStaticDive();
-void staticDiveWakeUp();
-void selectMode();
 bool detectSurface(float levelSurfaceDetection);
 
 #endif

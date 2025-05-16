@@ -8,12 +8,6 @@ WifiManager wm;
 RunningAverage depthRAvg(SAMPLES_NUMBER_DEPTH_CHECK);
 WaterTouchSensor waterSensor(WATER_TOUCH_PIN, END_DIVE_WATER_THRESHOLD);
 
-// variables permanentes pour le mode de plongée statique
-RTC_DATA_ATTR Dive staticDive(&sd);
-RTC_DATA_ATTR bool diveMode = 0; // 0:dynamic, 1:static
-RTC_DATA_ATTR int staticCount;
-RTC_DATA_ATTR long staticTime;
-
 /// @brief Interrupt routine to shutdown remora if wifi is disconnected
 /// @return
 void IRAM_ATTR ISR()
@@ -70,76 +64,55 @@ void wake()
     }
 
     // check wake up reason
-    uint64_t wakeup_reason = esp_sleep_get_wakeup_cause();
-    if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
+    uint64_t wakeup_reason = esp_sleep_get_ext1_wakeup_status();
+    uint64_t mask = 1;
+    int i = 0;
+
+    // if wake up with water sensor, start dive
+    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
     {
-        log_d("Wake up timer static");
-        gpio_hold_dis(GPIO_NUM_33);
-        staticDiveWakeUp();
+        log_d("Dynamic dive with touchpad wake up");
+        dynamicDive();
     }
-    else
+
+    while (i < 64)
     {
-        wakeup_reason = esp_sleep_get_ext1_wakeup_status();
-        uint64_t mask = 1;
-        int i = 0;
-
-        // if wake up with water sensor, start dive
-        if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
+        if (wakeup_reason & mask)
         {
-            log_d("Dynamic dive with touchpad wake up");
-            dynamicDive();
-        }
-
-        while (i < 64)
-        {
-            if (wakeup_reason & mask)
+            if (i == GPIO_WATER) // Start dive
             {
-                if (i == GPIO_WATER) // Start dive
-                {
-                    if (diveMode == STATIC_MODE)
-                    { // if Water wake up and static Mode
-                        log_d("Static dive");
-                        startStaticDive();
-                        sleep(SLEEP_WITH_TIMER);
-                    }
-                    else
-                    {
-                        log_d("Dynamic dive");
-                        dynamicDive();
-                    }
-                }
-                else if (i == GPIO_VCC_SENSE) // wifi config
-                {
-                    log_i("Wake up gpio vcc sense");
+                log_d("Dynamic dive");
+                dynamicDive();
+            }
+            else if (i == GPIO_VCC_SENSE) // wifi config
+            {
+                log_i("Wake up gpio vcc sense");
 
-                    log_i("Start Check Index ");
-                    Dive d(&sd);
-                    d.checkIndex();
-                    log_d("End Check Index ");
+                log_i("Start Check Index ");
+                Dive d(&sd);
+                d.checkIndex();
+                log_d("End Check Index ");
 
-                    // While wifi not set, shutdown if usb is disconnected
-                    attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
+                // While wifi not set, shutdown if usb is disconnected
+                attachInterrupt(GPIO_VCC_SENSE, ISR, FALLING);
 
-                    log_d("START PORTAL");
-                    wm.startPortal(sd);
-                }
-                else if (i == GPIO_CONFIG) // button config (switch between diving modes)
+                log_d("START PORTAL");
+                wm.startPortal(sd);
+            }
+            else if (i == GPIO_CONFIG) // button config (switch between diving modes)
+            {
+                log_d("Wake up gpio config, check delete credentials");
+                if (wm.checkDeleteCredentials() == false)
                 {
-                    log_d("Wake up gpio config, check delete credentials");
-                    if (wm.checkDeleteCredentials() == false)
-                    {
 #ifdef MODE_DEBUG
-                        dynamicDive();
-#else
-                        selectMode();
+                    dynamicDive();
 #endif
-                    }
                 }
             }
-
-            i++;
-            mask = mask << 1;
         }
+
+        i++;
+        mask = mask << 1;
     }
 }
 
@@ -200,7 +173,7 @@ void dynamicDive()
         Position startPos = gps.parseStart(gpsRecords);
         log_v("ParseStart ended");
 
-        if (d.Start(startPos.dateTime, startPos.Lat, startPos.Lng, TIME_DYNAMIC_MODE, diveMode) != "")
+        if (d.Start(startPos.dateTime, startPos.Lat, startPos.Lng, TIME_DYNAMIC_MODE) != "")
         {
             int timer = 0;
 
@@ -338,7 +311,7 @@ void dynamicDive()
                     }
                 }
 
-                end = d.End(endPos.dateTime, endPos.Lat, endPos.Lng, diveMode);
+                end = d.End(endPos.dateTime, endPos.Lat, endPos.Lng);
 
                 if (!startPos.valid && !endPos.valid)
                 {
@@ -350,14 +323,14 @@ void dynamicDive()
             }
             else if (validDive == true && lowBat == true && startPos.valid == true) // if lowbat and  datetime and gps ok save datas and set ready to upload
             {
-                end = d.End(gps.getTime(), 0, 0, diveMode);
+                end = d.End(gps.getTime(), 0, 0);
                 log_d("End dive after low batt");
                 sleep(LOW_BATT_SLEEP);
             }
             else if (validDive == true && vccSense == true && startPos.valid == true) // if usb connected datetime and gps ok , end dive only with timer
             {
                 log_d("End dive after VCC SENSE");
-                end = d.End(gps.getTime(), 0, 0, diveMode);
+                end = d.End(gps.getTime(), 0, 0);
             }
             else
             {
@@ -378,122 +351,6 @@ void dynamicDive()
     else
     {
         log_d("Surface not detected");
-    }
-}
-
-void startStaticDive()
-{
-    pinMode(GPIO_3V3_EN, OUTPUT);
-    digitalWrite(GPIO_3V3_EN, LOW);
-    delay(10);
-    Wire.begin(I2C_SDA, I2C_SCL);
-    delay(10);
-
-    GNSS gps = GNSS();
-    sd = SecureDigital();
-    tsys01 temperatureSensor = tsys01();
-    ms5837 depthSensor = ms5837();
-
-    staticCount = 0;
-
-    if (staticDive.Start(now(), gps.getLat(), gps.getLng(), TIME_TO_SLEEP_STATIC, diveMode) != "")
-    {
-        pinMode(GPIO_LED2G, OUTPUT);
-        for (int i = 0; i < 3; i++)
-        {
-            digitalWrite(GPIO_LED2G, HIGH);
-            delay(300);
-            digitalWrite(GPIO_LED2G, LOW);
-            delay(300);
-        }
-        double depth, temp;
-        staticTime = 0;
-
-        temp = temperatureSensor.getTemp();
-        depth = depthSensor.getDepth();
-
-        Record tempRecord = Record{temp, depth, staticTime};
-        staticDive.NewRecordStatic(tempRecord);
-    }
-}
-
-void staticDiveWakeUp()
-{
-    pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
-    digitalWrite(GPIO_PROBE, LOW);
-    pinMode(GPIO_3V3_EN, OUTPUT);
-    digitalWrite(GPIO_3V3_EN, LOW);
-    delay(10);
-    Wire.begin(I2C_SDA, I2C_SCL);
-    delay(10);
-
-    tsys01 temperatureSensor = tsys01();
-    ms5837 depthSensor = ms5837();
-    double depth, temp;
-
-    temp = temperatureSensor.getTemp();
-    depth = depthSensor.getDepth();
-
-    staticTime += TIME_TO_SLEEP_STATIC;
-
-    if (depth < MAX_DEPTH_CHECK_WATER)
-    {
-        pinMode(GPIO_PROBE, INPUT); // enable probe pin to allow water detection
-        pinMode(GPIO_WATER, INPUT);
-        int value;
-
-        value = analogRead(GPIO_WATER);
-        log_v("Value = %d", value);
-
-        if (value >= WATER_TRIGGER)
-            staticCount = 0; // reset No water counter
-        else
-            staticCount++;           // if no water counter++
-        pinMode(GPIO_PROBE, OUTPUT); // set gpio probe pin as low output to avoid corrosion
-        digitalWrite(GPIO_PROBE, LOW);
-        pinMode(GPIO_WATER, OUTPUT);
-        digitalWrite(GPIO_WATER, LOW);
-    }
-
-    Record tempRecord = Record{temp, depth, staticTime};
-    staticDive.NewRecordStatic(tempRecord);
-
-    // check battery and USB power , back to sleep  without water detection if lowBat
-    if (staticTime % TIME_CHECK_POWER == 0)
-        if (readBattery() < LOW_BATTERY_LEVEL)
-            sleep(LOW_BATT_SLEEP);
-
-    if (staticCount < MAX_STATIC_COUNTER) // if water detected sleep with timer
-        sleep(SLEEP_WITH_TIMER);
-    else // if no water, end static dive
-    {
-        GNSS gps = GNSS();
-        String ID = staticDive.End(now(), gps.getLat(), gps.getLng(), diveMode);
-        if (ID == "")
-            log_e("error ending the dive");
-        sleep(DEFAULT_SLEEP); // sleep without timer waiting for other dive or config button
-    }
-}
-
-void selectMode()
-{
-    diveMode = !diveMode;
-
-    if (diveMode == STATIC_MODE)
-    {
-        log_v("Static Diving");
-
-        digitalWrite(GPIO_LED2B, LOW);
-        delay(3000);
-        digitalWrite(GPIO_LED2B, HIGH);
-    }
-    else
-    {
-        log_v("Dynamic diving");
-
-        digitalWrite(GPIO_LED2G, LOW);
-        delay(3000);
-        digitalWrite(GPIO_LED2G, HIGH);
     }
 }
 

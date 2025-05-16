@@ -143,7 +143,7 @@ Position GNSS::parseStart(struct Record *records)
             }
         }
     }
-    digitalWrite(GPIO_LED2B, HIGH);                       // turn syn led off when gps connected
+    digitalWrite(GPIO_LED2B, HIGH);                     // turn syn led off when gps connected
     pos.dateTime = now() - idRecord * TIME_GPS_RECORDS; // start datetime is before the gps search so we remove the duration of the gps search.
     log_v("DateTime: %ld\tNow:%ld", pos.dateTime, now());
 
@@ -234,7 +234,7 @@ Position GNSS::parseEnd(struct Record *records, int recordsLength, int oldTime)
                 if (millis() - fixEphemeridesTime > TIME_DIVE_EPHEMERIDES_FIX * 1000)
                 {
                     digitalWrite(GPIO_GPS_EN, HIGH); // on éteint la led GPS
-                    fixEphemeridesOK = true;            // passe à true pour terminer la plongée si possible
+                    fixEphemeridesOK = true;         // passe à true pour terminer la plongée si possible
                 }
             }
 
@@ -369,7 +369,6 @@ int GNSS::getEphemerides()
     return -3;
 }
 
-
 int GNSS::getExtensionDay()
 {
     // 1) Activation du GPS
@@ -389,7 +388,7 @@ int GNSS::getExtensionDay()
     const unsigned long timeout = 2000; // 2 secondes d'écoute (adapter si besoin)
 
     String sentence;
-    int extensionDay = -1;  // Valeur par défaut (négative si pas trouvé)
+    int extensionDay = -1; // Valeur par défaut (négative si pas trouvé)
 
     // 4) Lecture des trames jusqu'au timeout
     while (millis() - startTime < timeout)
@@ -425,7 +424,8 @@ int GNSS::getExtensionDay()
                             fields[fieldIndex++] = sentence.substring(startIndex, i);
                             startIndex = i + 1;
                             // Si on a déjà extrait assez de champs, on peut s'arrêter
-                            if (fieldIndex >= 10) break;
+                            if (fieldIndex >= 10)
+                                break;
                         }
                     }
 

@@ -28,16 +28,21 @@ void WifiManager::startPortal(SecureDigital sd)
   SPIFFS.end();
 
   esp_task_wdt_init(60, false); // 60 secondes, false pour désactiver le WDT pour toutes les tâches
-
   TaskHandle_t TaskLedBattery;
+  xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery", 10000, NULL, 0, &TaskLedBattery, 0);
+
+  //TaskHandle_t TaskGpsFix;
+  //xTaskCreatePinnedToCore(TaskGpsFixCode, "TaskGpsFix", 10000, NULL, 0, &TaskGpsFix, 0);
+  /*TaskHandle_t TaskLedBattery;
   xTaskCreatePinnedToCore(TaskLedBatteryCode, "TaskLedBattery",
                           LED_BATT_STACK_SIZE,
-                          NULL, 1, &TaskLedBattery, 0);
-
+                          NULL, 1, &TaskLedBattery, 0);*/
+/*
   TaskHandle_t TaskGpsFix;
   xTaskCreatePinnedToCore(TaskGpsFixCode, "TaskGpsFix",
                           GPS_FIX_STACK_SIZE,
                           NULL, 1, &TaskGpsFix, 1);
+                          */
 
   Portal.begin();
   if (MDNS.begin("remora"))
@@ -66,7 +71,7 @@ void WifiManager::startPortal(SecureDigital sd)
     if (millis() - previous > TIME_UPLOAD_OTA * 1000) // retry upload and ota after a while
     {
       pinMode(GPIO_LED2B, OUTPUT);
-      digitalWrite(GPIO_LED2B, HIGH);
+      digitalWrite(GPIO_LED2B, LOW);
 
       if (uploadDives(sd) != SUCCESS)
         log_e("Error after upload");
@@ -75,12 +80,13 @@ void WifiManager::startPortal(SecureDigital sd)
       if (ota(sd) != SUCCESS)
         log_e("Error after OTA");
 
-      digitalWrite(GPIO_LED2B, LOW);
+      digitalWrite(GPIO_LED2B, HIGH);
       log_v("OTA finished, waiting for usb disconnection");
 
       previous = millis(); // reset upload and ota retry timer
     }
     Portal.handleClient();
+    taskYIELD();
   }
 
   log_v("USB disconnected, go back to sleep");
