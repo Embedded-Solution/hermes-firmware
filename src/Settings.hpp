@@ -5,7 +5,7 @@
 #define SDCARD_ERROR_SLEEP 2
 #define LOW_BATT_SLEEP 3
 
-#define FIRMWARE_VERSION "5.00"
+#define FIRMWARE_VERSION "5.01"
 // Debug parameters
 #ifdef TAG
 #undef TAG

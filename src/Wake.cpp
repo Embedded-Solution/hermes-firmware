@@ -286,6 +286,9 @@ void dynamicDive()
                 }
             }
 
+            // Turn LED off
+            digitalWrite(GPIO_LED2G, HIGH);
+
             log_d("valid dive = %d\tvccsense = %d\t valid pos = %d\t lowbatt = %d", validDive, vccSense, startPos.valid, lowBat);
             String end;
             // if dive valid (Pmin reached) get end GPS, else delete records and clean index
